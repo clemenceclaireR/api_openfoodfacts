@@ -35,12 +35,15 @@ Download the MySQL installer on : https://dev.mysql.com/downloads/mysql/
 
 The user open the program on a terminal. He can choose between 3 options :
 
+1 - Display categories
 
-1 - Which food item do you like to trade ?
+2 - Display products
 
-2 - See my traded food items
+3 - Which food item do you like to trade ?
 
-3 - Quit
+4 - Display previously saved products
+
+5 - Quit
 
 If the user choose the first option, the program will ask him or her several questions :
 
