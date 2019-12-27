@@ -33,7 +33,7 @@ Download the MySQL installer on : https://dev.mysql.com/downloads/mysql/
 
 #### How to use
 
-The user open the program on a terminal. He can choose between 3 options :
+The user open the program on a terminal. He can choose between 5 options :
 
 1 - Display categories
 

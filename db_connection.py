@@ -4,8 +4,8 @@
 HOST = "localhost"
 DATABASE = "openfoodfacts"
 
-USER = "OC"
-PASSWORD = "OC"
+USER = "user"
+PASSWORD = "off"
 
 TABLES = {'Categories': (
     "CREATE TABLE IF NOT EXISTS Categories ("

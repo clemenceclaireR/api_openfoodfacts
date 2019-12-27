@@ -2,21 +2,33 @@
 # -*- Coding: UTF-8 -*-
 
 import mysql.connector
-from menu import *
+
+import api_off
+import db_connection
 from db_connection import *
 from mysql.connector import errorcode
-from database import *
+import request_off
+import database
+from PyQt5 import QtWidgets
+from mainwindow import Ui_MainWindow
+import sys
+import food_item
+import categories_menu
+import products_menu
+import saved_products
 
-# TODO : creer un fichier py pour creer la liste des categories et des produits d'OFF
-# TODO: creer un fichier.py qui creera la base de donnee
 
-
-class Main:
+class Main(QtWidgets.QMainWindow):
     """
     Main program which will interacts with the API and the database
     """
     def __init__(self):
         # Connection with the database
+        QtWidgets.QWidget.__init__(self)
+        self.main_menu()
+
+
+# connection to the database
         try:
             self.db = mysql.connector.connect(
                 user=USER,
@@ -33,33 +45,65 @@ class Main:
             # creating cursor
             self.cursor = self.db.cursor()
 
-    def menu(self):
-        """
-        Display menu and submenus
-        """
-        while 1:
-            print(MAIN_MENU_TEXT)
-            try :
-                choice=int(input())
-                if choice == 1:
-                    # show categories
-                    pass
-                elif choice == 2:
-                    # shows products
-                    pass
-                elif choice == 3:
-                    # show substiute menu
-                    pass
-                elif choice == 4:
-                    # show recorded products
-                    pass
-                elif choice == 5:
-                    quit()
-            except ValueError:
-                print("Please enter a number between 1 and 5.")
+
+# program interface
+
+    def main_menu(self):
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.display_categories_button = self.ui.pushButton
+        self.display_products_button = self.ui.pushButton_2
+        self.display_food_item_button = self.ui.pushButton_3
+        self.display_saved_products = self.ui.pushButton_4
+        self.quit_button = self.ui.pushButton_5
+
+        self.display_categories_button.clicked.connect(self.categories_section)
+        self.display_products_button.clicked.connect(self.products_section)
+        self.display_food_item_button.clicked.connect(self.food_item_menu)
+        self.display_saved_products.clicked.connect(self.saved_products_menu)
+        self.quit_button.clicked.connect(quit)
+
+    def categories_section(self):
+        self.ui_categories = categories_menu.Ui_MainWindow()
+        self.ui_categories.setupUi(self)
+        self.back_button = self.ui_categories.pushButton_5
+        self.back_button.clicked.connect(self.main_menu)
+        self.quit_button = self.ui_categories.pushButton
+        self.quit_button.clicked.connect(quit)
+
+    def products_section(self):
+        self.ui_products = products_menu.Ui_MainWindow()
+        self.ui_products.setupUi(self)
+        self.back_button2 = self.ui_products.pushButton_5
+        self.back_button2.clicked.connect(self.main_menu)
+        self.quit_button2 = self.ui_products.pushButton
+        self.quit_button2.clicked.connect(quit)
+
+    def food_item_menu(self):
+        self.ui_fooditem = food_item.Ui_MainWindow()
+        self.ui_fooditem.setupUi(self)
+        self.back_button3 = self.ui_fooditem.pushButton_5
+        self.back_button3.clicked.connect(self.main_menu)
+        self.quit_button3 = self.ui_fooditem.pushButton
+        self.quit_button3.clicked.connect(quit)
+
+    def saved_products_menu(self):
+        self.ui_savedproducts = saved_products.Ui_MainWindow()
+        self.ui_savedproducts.setupUi(self)
+        self.back_button4 = self.ui_savedproducts.pushButton_5
+        self.back_button4.clicked.connect(self.main_menu)
+        self.quit_button4 = self.ui_savedproducts.pushButton
+        self.quit_button4.clicked.connect(quit)
+
+    def init_db(self):
+        pass
+
+    def get_data(self):
+        pass
 
 
-def display_menu():
-    print(MAIN_MENU_TEXT)
-
-display_menu()
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    widget = Main()
+    widget.show()
+    sys.exit(app.exec_())
