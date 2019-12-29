@@ -16,6 +16,7 @@ import food_item
 import categories_menu
 import products_menu
 import saved_products
+from PyQt5.QtWidgets import QMessageBox
 
 
 class Main(QtWidgets.QMainWindow):
@@ -23,12 +24,10 @@ class Main(QtWidgets.QMainWindow):
     Main program which will interacts with the API and the database
     """
     def __init__(self):
-        # Connection with the database
         QtWidgets.QWidget.__init__(self)
         self.main_menu()
 
-
-# connection to the database
+        # connection to the database
         try:
             self.db = mysql.connector.connect(
                 user=USER,
@@ -45,9 +44,38 @@ class Main(QtWidgets.QMainWindow):
             # creating cursor
             self.cursor = self.db.cursor()
 
+        self.database_access = database.Database(self.cursor)
 
-# program interface
+    def init_db(self):
+        """
+        Create the database and its tables
+        """
+        self.database_access.use_db(db_connection.DATABASE)
+        self.database_access.create_tables(db_connection.TABLES, self.db)
 
+    def get_data(self):
+        """
+            calls the api class of api_off.py file
+        """
+        pass
+
+    def main_loop(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        try:
+            self.database_access.user_cursor.execute("USE {};".format(db_connection.DATABASE))
+            msg.setText("Trying to use database")
+            self.cursor.execute("USE {};".format(db_connection.DATABASE))
+            msg.setText("Using database")
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_BAD_DB_ERROR:
+                # if database doesn't exist
+                self.init_db()
+                self.get_data()
+        else:
+            pass
+
+    # program interfaces
     def main_menu(self):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -95,15 +123,11 @@ class Main(QtWidgets.QMainWindow):
         self.quit_button4 = self.ui_savedproducts.pushButton
         self.quit_button4.clicked.connect(quit)
 
-    def init_db(self):
-        pass
-
-    def get_data(self):
-        pass
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     widget = Main()
     widget.show()
+    widget.main_loop()
     sys.exit(app.exec_())
+

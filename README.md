@@ -3,7 +3,7 @@
 #### **Description**
 
 
-This project has been developped for an Openclassrooms project.
+This project has been developed for an Openclassrooms project.
 Its purpose is for the user to choose a food item and find a better alternative, dieteticly speaking.
 
 
@@ -17,7 +17,7 @@ Linux :
 
 Windows : Donwload here => https://www.python.org/downloads/windows/
 
-MacOS : Dowlload here => https://www.python.org/downloads/mac-osx/
+MacOS : Download here => https://www.python.org/downloads/mac-osx/
 
 **MySQL**
 
@@ -33,7 +33,7 @@ Download the MySQL installer on : https://dev.mysql.com/downloads/mysql/
 
 #### How to use
 
-The user open the program on a terminal. He can choose between 5 options :
+The user launches program.py on a terminal. A window open ; he can choose between 5 options :
 
 1 - Display categories
 
@@ -45,7 +45,7 @@ The user open the program on a terminal. He can choose between 5 options :
 
 5 - Quit
 
-If the user choose the first option, the program will ask him or her several questions :
+If the user clicks on the first option, the program will ask him or her several questions :
 
 
 - Choose you category (user has to choose a number associated to a food category)
@@ -53,9 +53,9 @@ If the user choose the first option, the program will ask him or her several que
 - The program proposes a substitute with its description, a store where he or she can buy it, and a link to the associated Open Food Fact page.
 - The user can save the result in the database.
 
-If the user selects the second option, the program will display the previous saved results.
+If the user selects the fourth option, the program will display the previous saved results.
 
-If the user choose the third option, the program will stop.
+If the user choose the fifth option, the program will stop.
 
 
 

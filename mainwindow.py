@@ -57,7 +57,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "Display Categories"))
         self.pushButton_2.setText(_translate("MainWindow", "Display Products"))
-        self.pushButton_3.setText(_translate("MainWindow", "Enter a food item would you would like to trade"))
+        self.pushButton_3.setText(_translate("MainWindow", "Enter a food item you would like to trade"))
         self.pushButton_4.setText(_translate("MainWindow", "Display previously saved products"))
         self.pushButton_5.setText(_translate("MainWindow", "Quit"))
         self.label.setText(_translate("MainWindow", "Please select a choice :"))
