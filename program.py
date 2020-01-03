@@ -25,6 +25,7 @@ class Main(QtWidgets.QMainWindow):
     """
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
+        self.msg = QMessageBox()
         self.main_menu()
 
         # connection to the database
@@ -55,18 +56,23 @@ class Main(QtWidgets.QMainWindow):
 
     def get_data(self):
         """
-            calls the api class of api_off.py file
+        calls the api class of api_off.py file
         """
         pass
 
+    def show_dialog(self):
+        #msg = QMessageBox()
+        self.msg.setIcon(QMessageBox.Information)
+        self.msg.exec_()
+
     def main_loop(self):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
         try:
             self.database_access.user_cursor.execute("USE {};".format(db_connection.DATABASE))
-            msg.setText("Trying to use database")
+            self.msg.setText("Trying to use database")
+            self.show_dialog()
             self.cursor.execute("USE {};".format(db_connection.DATABASE))
-            msg.setText("Using database")
+            self.msg.setText("Using database")
+            self.show_dialog()
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
                 # if database doesn't exist
