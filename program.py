@@ -87,11 +87,12 @@ class Main(QtWidgets.QMainWindow):
 
         self.display_categories_button.clicked.connect(self.categories_section)
         self.display_products_button.clicked.connect(self.products_section)
-        self.display_food_item_button.clicked.connect(self.food_item_menu)
+        self.display_food_item_button.clicked.connect(self.find_substitute_item_menu)
         self.display_saved_products.clicked.connect(self.saved_products_menu)
         self.quit_button.clicked.connect(quit)
 
     def categories_section(self):
+        ## appelle le fichier request_off et sa fonction pour montrer les différentes catégories
         self.ui_categories = categories_menu.Ui_MainWindow()
         self.ui_categories.setupUi(self)
         self.back_button = self.ui_categories.pushButton_5
@@ -107,7 +108,10 @@ class Main(QtWidgets.QMainWindow):
         self.quit_button2 = self.ui_products.pushButton
         self.quit_button2.clicked.connect(quit)
 
-    def food_item_menu(self):
+    def find_substitute_item_menu(self):
+        ## Proposera de choisir une catégorie, puis un produit.
+        ## Renverra un substitut pour le produit avec ses informations.
+        ## Ensuite, proposera d'enregistrer le produit.
         self.ui_fooditem = food_item.Ui_MainWindow()
         self.ui_fooditem.setupUi(self)
         self.back_button3 = self.ui_fooditem.pushButton_5

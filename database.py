@@ -62,7 +62,7 @@ class Database:
                 else:
                     msg.setText(error.msg)
             else:
-                print("\t Ok")
+                msg.setText("Tables created successfully")
                 database.commit()
 
     def make_request(self, request):
@@ -74,7 +74,7 @@ class Database:
         try:
             self.user_cursor.execute(request)
         except Exception as error:
-            msg.setText("Incorrect SQL query: \n {} \n Detected error : {} ".format(request, error))
+            msg.setText("Incorrect SQL query: {} \n Error : {} ".format(request, error))
             return 0
         else:
             return 1
