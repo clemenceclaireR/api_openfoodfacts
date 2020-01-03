@@ -1,6 +1,8 @@
 #! usr/bin/env python3
 # -*- Coding: UTF-8 -*-
 
+PRODUCTS_LINK = "https://fr.openfoodfacts.org/cgi/search.pl?"
+
 HOST = "localhost"
 DATABASE = "openfoodfacts"
 
