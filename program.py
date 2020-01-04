@@ -3,19 +3,17 @@
 
 import mysql.connector
 
-import api_off
-import db_connection
-from db_connection import *
+from database import db_connection, request_off
+from database.db_connection import *
 from mysql.connector import errorcode
-import request_off
-import database
+from database import database
 from PyQt5 import QtWidgets
-from mainwindow import Ui_MainWindow
+from interface.mainwindow import Ui_MainWindow
 import sys
-import food_item
-import categories_menu
-import products_menu
-import saved_products
+import interface.food_item
+import interface.categories_menu
+import interface.products_menu
+import interface.saved_products
 from PyQt5.QtWidgets import QMessageBox
 
 
@@ -30,10 +28,7 @@ class Main(QtWidgets.QMainWindow):
 
         # connection to the database
         try:
-            self.db = mysql.connector.connect(
-                user=USER,
-                password=PASSWORD,
-                host=HOST)
+            self.db = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST)
         except mysql.connector.Error as error:
             if error.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 print("User name or password incorrect")
@@ -46,6 +41,7 @@ class Main(QtWidgets.QMainWindow):
             self.cursor = self.db.cursor()
 
         self.database_access = database.Database(self.cursor)
+        self.request_access = request_off.Request(self.cursor, self.db)
 
     def init_db(self):
         """
@@ -61,7 +57,6 @@ class Main(QtWidgets.QMainWindow):
         pass
 
     def show_dialog(self):
-        #msg = QMessageBox()
         self.msg.setIcon(QMessageBox.Information)
         self.msg.exec_()
 
@@ -99,7 +94,8 @@ class Main(QtWidgets.QMainWindow):
 
     def categories_section(self):
         ## appelle le fichier request_off et sa fonction pour montrer les différentes catégories
-        self.ui_categories = categories_menu.Ui_MainWindow()
+        self.request_access.show_categories(db_connection.TABLES, 10)
+        self.ui_categories = interface.categories_menu.Ui_MainWindow()
         self.ui_categories.setupUi(self)
         self.back_button = self.ui_categories.pushButton_5
         self.back_button.clicked.connect(self.main_menu)
@@ -107,7 +103,7 @@ class Main(QtWidgets.QMainWindow):
         self.quit_button.clicked.connect(quit)
 
     def products_section(self):
-        self.ui_products = products_menu.Ui_MainWindow()
+        self.ui_products = interface.products_menu.Ui_MainWindow()
         self.ui_products.setupUi(self)
         self.back_button2 = self.ui_products.pushButton_5
         self.back_button2.clicked.connect(self.main_menu)
@@ -118,7 +114,7 @@ class Main(QtWidgets.QMainWindow):
         ## Proposera de choisir une catégorie, puis un produit.
         ## Renverra un substitut pour le produit avec ses informations.
         ## Ensuite, proposera d'enregistrer le produit.
-        self.ui_fooditem = food_item.Ui_MainWindow()
+        self.ui_fooditem = interface.food_item.Ui_MainWindow()
         self.ui_fooditem.setupUi(self)
         self.back_button3 = self.ui_fooditem.pushButton_5
         self.back_button3.clicked.connect(self.main_menu)
@@ -126,7 +122,7 @@ class Main(QtWidgets.QMainWindow):
         self.quit_button3.clicked.connect(quit)
 
     def saved_products_menu(self):
-        self.ui_savedproducts = saved_products.Ui_MainWindow()
+        self.ui_savedproducts = interface.saved_products.Ui_MainWindow()
         self.ui_savedproducts.setupUi(self)
         self.back_button4 = self.ui_savedproducts.pushButton_5
         self.back_button4.clicked.connect(self.main_menu)
