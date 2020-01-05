@@ -31,14 +31,11 @@ class Main(QtWidgets.QMainWindow):
             self.db = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST)
         except mysql.connector.Error as error:
             if error.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                self.msg.setText("User name or password incorrect")
-                self.show_dialog()
+                print("User name or password incorrect")
             elif error.errno == errorcode.ER_BAD_DB_ERROR:
-                self.msg.setText("Database does not seem to exist")
-                self.show_dialog()
+                print("Database does not seem to exist")
             else:
-                self.msg.setText("Connection failed with following error : {}".format(error))
-                self.show_dialog()
+                print("Connection failed with following error : {}".format(error))
         else:
             # creating cursor
             self.cursor = self.db.cursor()
