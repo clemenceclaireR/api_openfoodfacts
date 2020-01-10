@@ -14,6 +14,7 @@ class Request:
         self.running = False
         # from which row to start
         self.offset = 0
+        #self.cat_list = QListView
 
     def show_dialog(self):
         self.msg.setIcon(QMessageBox.Information)
@@ -31,6 +32,8 @@ class Request:
                 count = 0
                 while count < len(result):
                     self.msg.setText(result[count])
+                    self.show_dialog()
+                    #self.cat_list.setTextElideMode(result[count])
                     count += 1
 
     def show_categories(self, table, limit):
@@ -44,8 +47,10 @@ class Request:
             for num in self.user_cursor.fetchone():
                 total = num
 
-            request = ("SELECT * FROM %s ORDER BY id LIMIT {}\
-                            OFFSET {};".format(category, limit, self.offset))
+            request = ("SELECT * FROM {} ORDER BY id LIMIT {} OFFSET {};".format
+                                                        (category, limit, self.offset))
+
+            self.display(request)
 
 
 
