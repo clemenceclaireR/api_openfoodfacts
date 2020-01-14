@@ -92,27 +92,48 @@ class Api:
         self.msg.setText("Categories inserted successfully.")
         self.show_dialog()
 
+    def get_categories_name_and_ids(self):
+        self.id_name = list()
+        count = 0
+        while count < len(self.sorted_categories):
+            category = str(count + 1)
+            self.user_cursor.execute("SELECT id, name FROM Categories\
+                WHERE id = " + category)
+            category_saved = self.user_cursor.fetchone()
+            self.id_name.append(category_saved)
+            count += 1
+        return self.id_name
+
+    def convert_categories_to_product_list(self):
+        self.get_categories_name_and_ids()
+        ids = range(0, len(self.id_name))
+
+        for n in ids:
+            for product in self.parsed_products:
+                if product['categories'] == self.id_name[n][1]:
+                    product['categories'] = self.id_name[n][0]
+
+        return self.parsed_products
+
     def insert_products(self, database):
         """
         Get products and save them into database
         """
-
+        self.convert_categories_to_product_list()
         try:
             for element in self.parsed_products:
-                self.user_cursor.execute("INSERT IGNORE INTO Products(name, id_category, brands, nutriscore,"
-                                         "link, store) VALUES(%s, %s, %s, %s, %s, %s)", (element['product_name'],
-                                                                                         element['categories'],
-                                                                                         element['brands'],
-                                                                                         element['nutrition_grade_fr'],
-                                                                                         element['url'],
-                                                                                         element['stores']))
-            self.msg.setText("Products inserted successfully in the database.")
-            self.show_dialog()
-            database.commit()
+                self.user_cursor.execute("INSERT IGNORE INTO Products(\
+                    name, id_category, brands, nutriscore, link, store) VALUES(\
+                    %s, %s, %s, %s, %s, %s)", (
+                        element['product_name'], element['categories'],
+                        element['brands'], element['nutrition_grade_fr'],
+                        element['url'], element['stores']))
         except Error as e:
             self.msg.setText("{}".format(e))
             self.show_dialog()
         else:
+            self.msg.setText("Products inserted successfully in the database.")
+            self.show_dialog()
             database.commit()
 
 

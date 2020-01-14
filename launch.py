@@ -132,6 +132,7 @@ class Main(QtWidgets.QMainWindow):
         self.quit_button.clicked.connect(quit)
 
     def products_section(self):
+        self.request_access.show_products(db_connection.TABLES, 10, 0)
         self.ui_products = interface.products_menu.Ui_MainWindow()
         self.ui_products.setupUi(self)
         self.back_button2 = self.ui_products.pushButton_5
