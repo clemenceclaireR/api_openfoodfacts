@@ -5,16 +5,12 @@ from PyQt5.QtWidgets import QMessageBox
 
 
 class Request:
-    def __init__(self, cursor, database):
+    def __init__(self, cursor):
         self.msg = QMessageBox()
         self.user_cursor = cursor
-        self.user_database = database
 
-        # connexion avec la base de données
-        self.running = False
         # from which row to start
         self.offset = 0
-        #self.cat_list = QListView
 
     def show_dialog(self):
         self.msg.setIcon(QMessageBox.Information)
@@ -24,36 +20,24 @@ class Request:
         """
         display results for the different menus
         """
-        self.running = True
-        while self.running:
-            # make request
-            self.user_cursor.execute(request)
-            for result in self.user_cursor.fetchall():
-                count = 0
-                while count < len(result):
-                    self.msg.setText(result[count])
-                    self.show_dialog()
-                    #self.cat_list.setTextElideMode(result[count])
-                    count += 1
+        self.user_cursor.execute(request)
+        for result in self.user_cursor.fetchall(): # liste vide
+            count = 0
+            self.msg.setText(result[count])
+            self.show_dialog()
+            count += 1
 
-    def show_categories(self, table, limit):
-        self.running = True
-        while self.running:
-            name_table = list(table.keys())
-            category = name_table[0]
+    def show_categories(self, table, limit, off):
+        self.offset = off
 
-            # counting items in the table Category
-            self.user_cursor.execute("SELECT COUNT(*) FROM {};".format(category))
-            for num in self.user_cursor.fetchone():
-                total = num
+        name_table = list(table.keys())
+        category = name_table[0]
 
-            request = ("SELECT * FROM {} ORDER BY id LIMIT {} OFFSET {};".format
-                                                        (category, limit, self.offset))
+        # counting items in the table Categories
 
-            self.display(request)
+        self.user_cursor.execute("SELECT COUNT(*) FROM %s;" % category) # ici, arrive à lire les données de l'API
 
+        request = ("SELECT * FROM %s ORDER BY id LIMIT %s OFFSET %s;" %
+                   (category, limit, self.offset)) # ici, renvoie une liste vide.
 
-
-
-
-
+        self.display(request)

@@ -16,8 +16,8 @@ class Api:
         self.msg = QMessageBox()
         self.categories = list()
         self.sorted_categories = list()
-        self.cleaned_categories = list()
-        self.cleaned_products = list()
+        self.parsed_categories = list()
+        self.parsed_products = list()
         self.id_name = list()
         self.change_pages = api_connection.PARAMETERS
         self.user_cursor = cursor
@@ -41,20 +41,53 @@ class Api:
                 if not all(tag in element for tag in (
                         "product_name", "brands", "nutrition_grade_fr", "url",
                         "stores", "categories")):
-                    continue
-                self.cleaned_products.append(element)
+                    break
+                self.parsed_products.append(element)
             page += 1
 
-            #self.msg.setText("Page(s): {} on {}".format(page, 5))
-            #self.show_dialog()
+    def delete_superfluous_categories(self):
+        """
+        Delete superfluous categories associated to a product
+        in order to keep just one
+        """
+        try:
+            text = list()
+            for i in self.parsed_products:
+                # Splitting string
+                head, mid, end = i['categories'].partition(',')
+                text.append(head)
+
+            counter = 0
+            while counter < (len(text) - 1):
+                for j in self.parsed_products:
+                    j['categories'] = text[counter]
+                    counter += 1
+
+        except Error as e:
+            self.msg.setText("{}".format(e))
+            self.show_dialog()
+        else:
+            self.msg.setText("Categories parsed successfully")
+            self.show_dialog()
+
+    def sort_categories(self):
+        categories = list()
+        for element in self.parsed_products:
+            categories.append(element['categories'])
+
+        self.sorted_categories = sorted(set(categories))
+        self.msg.setText("Categories sorted successfully")
+        self.show_dialog()
+        return self.sorted_categories
 
     def insert_categories(self, database):
         """
         Insert the categories into the database
         """
         for element in self.sorted_categories:
-            self.user_cursor.execute("INSERT IGNORE INTO Categories(name) VALUES ('{}')"
-                                     .format(element))
+            # rows with invalid data that cause the error are ignored
+            self.user_cursor.execute("INSERT IGNORE INTO Categories(name) VALUES ('%s')"
+                                     % element)
         database.commit()
         self.msg.setText("Categories inserted successfully.")
         self.show_dialog()
@@ -65,18 +98,21 @@ class Api:
         """
 
         try:
-            for element in self.cleaned_products:
-                # probleme lors de l'insertion dans la bdd
+            for element in self.parsed_products:
                 self.user_cursor.execute("INSERT IGNORE INTO Products(name, id_category, brands, nutriscore,"
-                                         "link, store) VALUES({}, {}, {}, {}, {}, {})".format(
-                                            element['product_name'], element['categories'], element['brands'],
-                                            element['nutrition_grade_fr'], element['url'], element['stores']))
-                self.msg.setText("Product inserted successfully in the database.")
-                self.show_dialog()
-        except Error:
-            self.msg.setText("Errors while inserting products into the database")
-            self.show_dialog()
-        else:
+                                         "link, store) VALUES(%s, %s, %s, %s, %s, %s)", (element['product_name'],
+                                                                                         element['categories'],
+                                                                                         element['brands'],
+                                                                                         element['nutrition_grade_fr'],
+                                                                                         element['url'],
+                                                                                         element['stores']))
             self.msg.setText("Products inserted successfully in the database.")
             self.show_dialog()
             database.commit()
+        except Error as e:
+            self.msg.setText("{}".format(e))
+            self.show_dialog()
+        else:
+            database.commit()
+
+

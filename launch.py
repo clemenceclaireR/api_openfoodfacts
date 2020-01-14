@@ -29,7 +29,7 @@ class Main(QtWidgets.QMainWindow):
 
         # connection to the database
         try:
-            self.db = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST)
+            self.db = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST, buffered=True)
             self.msg.setText("Connection to the database successfully established")
             self.show_dialog()
         except mysql.connector.Error as error:
@@ -47,7 +47,7 @@ class Main(QtWidgets.QMainWindow):
             self.cursor = self.db.cursor()
 
         self.database_access = database.Database(self.cursor)
-        self.request_access = request_off.Request(self.cursor, self.db)
+        self.request_access = request_off.Request(self.cursor)
         self.api_access = api_off.Api(self.cursor)
 
     def init_db(self):
@@ -61,15 +61,24 @@ class Main(QtWidgets.QMainWindow):
         """
         calls the api_openfoodfacts class of api_off.py file
         """
-        self.api_access.get_products()
-        self.msg.setText("Getting products from the Api")
-        self.show_dialog()
 
         self.api_access.insert_categories(self.db)
         self.msg.setText("Inserting categories into the database")
 
+        self.api_access.get_products()
+        self.msg.setText("Getting products from the Api")
+        self.show_dialog()
+
+        self.api_access.delete_superfluous_categories()
+        self.msg.setText("Keeping just one category per product")
+        self.show_dialog()
+
+        self.api_access.sort_categories()
+        self.msg.setText("Sorting categories")
+        self.show_dialog()
+
         self.api_access.insert_products(self.db)
-        self.msg.setText("Inserting products into the database")
+        self.msg.setText("Database ready")
         self.show_dialog()
 
     def show_dialog(self):
@@ -86,12 +95,12 @@ class Main(QtWidgets.QMainWindow):
             self.msg.setText("Using database")
             self.show_dialog()
             # ! à appeler si les tables n'existent pas
-            #self.init_db()
+            self.init_db()
             self.get_data()
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
                 # if database doesn't exist
-                self.init_db()
+                #self.init_db()
                 self.get_data()
 
     # program interfaces
@@ -113,7 +122,7 @@ class Main(QtWidgets.QMainWindow):
 
     def categories_section(self):
         ## appelle le fichier request_off et sa fonction pour montrer les différentes catégories
-        self.request_access.show_categories(db_connection.TABLES, 10)
+        self.request_access.show_categories(db_connection.TABLES, 10, 0)
         self.ui_categories = interface.categories_menu.Ui_MainWindow()
         self.ui_categories.setupUi(self)
         self.back_button = self.ui_categories.pushButton_5
