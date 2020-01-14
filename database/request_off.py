@@ -21,9 +21,9 @@ class Request:
         display results for the different menus
         """
         self.user_cursor.execute(request)
-        for result in self.user_cursor.fetchall(): # liste vide
+        for result in self.user_cursor.fetchall(): 
             count = 0
-            self.msg.setText(result[count])
+            self.msg.setText(str(result))
             self.show_dialog()
             count += 1
 

@@ -29,7 +29,7 @@ class Main(QtWidgets.QMainWindow):
 
         # connection to the database
         try:
-            self.db = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST, buffered=True)
+            self.db = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST, buffered=True, use_unicode=True)
             self.msg.setText("Connection to the database successfully established")
             self.show_dialog()
         except mysql.connector.Error as error:
@@ -62,9 +62,6 @@ class Main(QtWidgets.QMainWindow):
         calls the api_openfoodfacts class of api_off.py file
         """
 
-        self.api_access.insert_categories(self.db)
-        self.msg.setText("Inserting categories into the database")
-
         self.api_access.get_products()
         self.msg.setText("Getting products from the Api")
         self.show_dialog()
@@ -76,6 +73,9 @@ class Main(QtWidgets.QMainWindow):
         self.api_access.sort_categories()
         self.msg.setText("Sorting categories")
         self.show_dialog()
+
+        self.api_access.insert_categories(self.db)
+        self.msg.setText("Inserting categories into the database")
 
         self.api_access.insert_products(self.db)
         self.msg.setText("Database ready")

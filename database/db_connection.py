@@ -30,3 +30,5 @@ TABLES = {'Categories': (
     " REFERENCES Categories(id) ON DELETE CASCADE"
     " ) ENGINE=InnoDB;")}
 
+ENCODING = "SET NAMES 'utf8';"
+
