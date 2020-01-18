@@ -5,6 +5,8 @@ import mysql.connector
 from PyQt5.QtWidgets import QMessageBox
 from mysql.connector import errorcode
 
+list_infos = ""
+
 
 class Database:
 
@@ -21,10 +23,12 @@ class Database:
         Uses the database
         if the database doesn't exists, it will call the method to create the database
         """
+        global list_infos
         try:
             self.user_cursor.execute("USE {};".format(dbname))
         # Print the error and use the method called create_database
         except mysql.connector.Error as error:
+            #list_infos.append("Database {} doesn't seem to exist".format(dbname))
             self.msg.setText("Database {} doesn't seem to exist".format(dbname))
             self.show_dialog()
             if error.errno == errorcode.ER_BAD_DB_ERROR:
@@ -32,8 +36,12 @@ class Database:
                 self.msg.setText("Database {} created successfully".format(dbname))
                 self.show_dialog()
         else:
+            #message_list.append("Database status ok")
+            #Main().display_status_bar(message_list)
+            list_infos.append("Database status ok")
             self.msg.setText("Database status ok")
             self.show_dialog()
+
 
     def create_db(self, dbname):
         """
