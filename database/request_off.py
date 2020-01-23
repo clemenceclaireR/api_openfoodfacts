@@ -121,14 +121,14 @@ class Request:
         product_name = str(information[1])
         nutriscore = str(information[4])
 
-        # show products with a higher nutricore
+        # show products with a higher nutriscore
         self.user_cursor.execute("SELECT Products.id, Products.name, Products.nutriscore,\
                         Products.shop, Products.brands, Products.link\
                         FROM Products INNER JOIN Categories \
                         ON Products.id_category = Categories.id\
-                        WHERE Categories.id = %(id_cat)s \
-                        AND Products.nutriscore <= %(code)s \
-                        ORDER BY Products.nutriscore, rand() LIMIT 5", category, product_name, nutriscore)
+                        WHERE Categories.id = %s \
+                        AND Products.nutriscore <= %s \
+                        ORDER BY Products.nutriscore", category, product_name, nutriscore)
 
         # This loop will display the index and the information related to
         for substitute in self.user_cursor.fetchall():
