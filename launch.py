@@ -16,9 +16,7 @@ import interface.saved_products
 import interface.mainwindow
 from interface.mainwindow import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
-from database.request_off import list_categories, list_products
-from database.database import list_infos
-
+from database.request_off import list_categories, list_products, user_category_choice
 app = QtWidgets.QApplication(sys.argv)
 
 message_list = list()
@@ -38,17 +36,17 @@ class Main(QtWidgets.QMainWindow):
             self.db = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST,
                                               buffered=True, use_unicode=True)
             message_list.append("Connection to the database successfully established")
-            self.main_menu(message_list)
+            self.display_message()
         except mysql.connector.Error as error:
             if error.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 message_list.append("User name or password incorrect")
-                self.main_menu(message_list)
+                self.display_message()
             elif error.errno == errorcode.ER_BAD_DB_ERROR:
                 message_list.append("Database does not seem to exist")
-                self.main_menu(message_list)
+                self.display_message()
             else:
                 message_list.append(("Connection failed with following error : {}".format(error)))
-                self.main_menu(message_list)
+                self.display_message()
         else:
             # creating cursor
             self.cursor = self.db.cursor()
@@ -71,36 +69,42 @@ class Main(QtWidgets.QMainWindow):
 
         self.api_access.get_products()
         message_list.append("Getting products from the Api")
-        self.main_menu(message_list)
+        self.display_message()
 
         self.api_access.delete_superfluous_categories()
         message_list.append("Keeping just one category per product")
-        self.main_menu(message_list)
+        self.display_message()
 
         self.api_access.sort_categories()
         message_list.append("Sorting categories")
-        self.main_menu(message_list)
+        self.display_message()
 
         self.api_access.insert_categories(self.db)
         message_list.append("Inserting categories into the database")
-        self.main_menu(message_list)
+        self.display_message()
         self.api_access.insert_products(self.db)
         message_list.append("Database ready")
-        self.main_menu(message_list)
+        #self.main_menu(message_list)
+        self.display_message()
 
     def show_dialog(self):
         self.msg.setIcon(QMessageBox.Information)
         self.msg.exec_()
 
+    def display_message(self):
+        self.main_menu(message_list)
+        for message in message_list:
+            return message
+
     def main_loop(self):
         try:
             self.database_access.user_cursor.execute("USE {};".format(db_connection.DATABASE))
-            self.msg.setText("Trying to use database")
-            self.show_dialog()
+            message_list.append("Trying to use database")
+            self.display_message()
 
             self.cursor.execute("USE {};".format(db_connection.DATABASE))
-            self.msg.setText("Using database")
-            self.show_dialog()
+            message_list.append("Using database")
+            self.display_message()
             # ! à appeler si les tables n'existent pas
             #self.init_db()
             self.get_data()
@@ -153,16 +157,33 @@ class Main(QtWidgets.QMainWindow):
         self.quit_button2.clicked.connect(quit)
 
     def find_substitute_item_menu(self):
-        ## Proposera de choisir une catégorie, puis un produit.
-        ## Renverra un substitut pour le produit avec ses informations.
-        ## Ensuite, proposera d'enregistrer le produit.
-        #self.request_access.find_healthier_substitute(db_connection.TABLES, 10, 0)
         self.ui_fooditem = interface.fooditem_menu.Ui_MainWindow()
         self.ui_fooditem.setupUi(self)
+        self.send_category = self.ui_fooditem.pushButton_3
+        self.category_choice = self.ui_fooditem.lineEdit
+        self.product_choice = self.ui_fooditem.lineEdit_2
+
+        self.get_input_category = self.ui_fooditem.pushButton_3
+        self.get_input_category.clicked.connect(self.get_category_input)
+        self.get_input_product = self.ui_fooditem.pushButton_4
+        # connect
+
+        # test
+        self.voir_produits_cat = self.ui_fooditem.pushButton_6
+        self.voir_produits_cat.clicked.connect(self.request_access.find_products_for_a_given_category)
+
         self.back_button3 = self.ui_fooditem.pushButton_5
         self.back_button3.clicked.connect(self.main_menu)
         self.quit_button3 = self.ui_fooditem.pushButton
         self.quit_button3.clicked.connect(quit)
+
+    def get_category_input(self):
+        # ici il considère que user_category_choice est différente
+        # mais qu'elle porte le même nom
+        user_category_choice = self.category_choice.text()
+        self.msg.setText(str(user_category_choice))
+        self.show_dialog()
+
 
     def saved_products_menu(self):
         self.ui_savedproducts = interface.saved_products.Ui_MainWindow()
@@ -174,7 +195,6 @@ class Main(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-    #app = QtWidgets.QApplication(sys.argv)
     widget = Main()
     widget.show()
     widget.main_loop()

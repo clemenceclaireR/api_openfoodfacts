@@ -4,8 +4,7 @@
 import mysql.connector
 from PyQt5.QtWidgets import QMessageBox
 from mysql.connector import errorcode
-
-list_infos = ""
+from launch import message_list
 
 
 class Database:
@@ -23,25 +22,16 @@ class Database:
         Uses the database
         if the database doesn't exists, it will call the method to create the database
         """
-        global list_infos
         try:
             self.user_cursor.execute("USE {};".format(dbname))
         # Print the error and use the method called create_database
         except mysql.connector.Error as error:
-            #list_infos.append("Database {} doesn't seem to exist".format(dbname))
-            self.msg.setText("Database {} doesn't seem to exist".format(dbname))
-            self.show_dialog()
+            message_list.append("Database {} doesn't seem to exist".format(dbname))
             if error.errno == errorcode.ER_BAD_DB_ERROR:
                 self.create_db(dbname)
-                self.msg.setText("Database {} created successfully".format(dbname))
-                self.show_dialog()
+                message_list.append("Database {} created successfully".format(dbname))
         else:
-            #message_list.append("Database status ok")
-            #Main().display_status_bar(message_list)
-            list_infos.append("Database status ok")
-            self.msg.setText("Database status ok")
-            self.show_dialog()
-
+            message_list.append("Database status ok")
 
     def create_db(self, dbname):
         """
@@ -51,12 +41,10 @@ class Database:
             request = ("CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8';".format(dbname))
             self.make_request(request)
         except mysql.connector.Error as error:
-            self.msg.setText("Unable to create database: {}".format(error))
-            self.show_dialog()
+            message_list.append("Unable to create database: {}".format(error))
             exit(1)
         else:
-            self.msg.setText("Database created successfully.")
-            self.show_dialog()
+            message_list.append("Database created successfully.")
             self.use_db(dbname)
 
     def create_tables(self, tables, database):
@@ -64,19 +52,16 @@ class Database:
         for table_name in tables:
             table_description = tables[table_name]
             try:
-                self.msg.setText("Table : {}".format(table_name))
-                self.show_dialog()
+                message_list.append("Table : {}".format(table_name))
                 self.make_request(table_description)
             except mysql.connector.Error as error:
                 if error.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                    self.msg.setText("Table already exists")
-                    self.show_dialog()
+                    message_list.append("Table already exists")
                 else:
                     self.msg.setText(error.msg)
                     self.show_dialog()
             else:
-                self.msg.setText("Tables created successfully")
-                self.show_dialog()
+                message_list.append("Tables created successfully")
                 database.commit()
 
     def make_request(self, request):
