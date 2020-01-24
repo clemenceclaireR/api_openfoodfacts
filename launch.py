@@ -16,7 +16,7 @@ import interface.saved_products
 import interface.mainwindow
 from interface.mainwindow import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
-from database.request_off import list_categories, list_products, user_category_choice
+from database.request_off import Variables
 app = QtWidgets.QApplication(sys.argv)
 
 message_list = list()
@@ -120,70 +120,44 @@ class Main(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.status_bar = self.ui.textBrowser
-        self.status_bar.setText(str(kwargs))
-        self.display_categories_button = self.ui.pushButton
-        self.display_products_button = self.ui.pushButton_2
-        self.display_food_item_button = self.ui.pushButton_3
-        self.display_saved_products = self.ui.pushButton_4
-        self.quit_button = self.ui.pushButton_5
-
-        self.display_categories_button.clicked.connect(self.categories_section)
-        self.display_products_button.clicked.connect(self.products_section)
-        self.display_food_item_button.clicked.connect(self.find_substitute_item_menu)
+        self.status_bar.setText(str(kwargs)) #OK
+        self.display_saved_products = self.ui.pushButton_4 # OK
+        self.quit_button = self.ui.pushButton_5 # OK
+        self.display_categories = self.ui.pushButton
+        self.display_categories.clicked.connect(self.request_show_categories)
+        self.display_products = self.ui.pushButton_2
+        self.display_products.clicked.connect(self.request_show_products)
+        self.send_category = self.ui.pushButton_3
+        self.send_category.clicked.connect(self.request_show_products_for_given_cat)
+        self.send_product = self.ui.pushButton_6
+        self.send_product.clicked.connect(self.look_for_substitute)
+        self.category_choice = self.ui.lineEdit
+        self.product_choice = self.ui.lineEdit_2
         self.display_saved_products.clicked.connect(self.saved_products_menu)
+
         self.quit_button.clicked.connect(quit)
 
-    def categories_section(self):
-        ## appelle le fichier request_off et sa fonction pour montrer les différentes catégories
+    def request_show_categories(self):
         self.request_access.show_categories(db_connection.TABLES, 100, 0)
-        self.ui_categories = interface.categories_menu.Ui_MainWindow()
-        self.ui_categories.setupUi(self)
-        self.back_button = self.ui_categories.pushButton_5
-        self.back_button.clicked.connect(self.main_menu)
-        self.list_cat = self.ui_categories.textBrowser
-        self.list_cat.setText(str(list_categories))
-        self.quit_button = self.ui_categories.pushButton
-        self.quit_button.clicked.connect(quit)
+        self.list_cat = self.ui.textBrowser_2
+        self.list_cat.setText(str(Variables.list_categories))
 
-    def products_section(self):
+    def request_show_products(self):
         self.request_access.show_products(db_connection.TABLES, 100, 0)
-        self.ui_products = interface.products_menu.Ui_MainWindow()
-        self.ui_products.setupUi(self)
-        self.back_button2 = self.ui_products.pushButton_5
-        self.back_button2.clicked.connect(self.main_menu)
-        self.list_prod = self.ui_products.textBrowser
-        self.list_prod.setText(str(list_products))
-        self.quit_button2 = self.ui_products.pushButton
-        self.quit_button2.clicked.connect(quit)
+        self.list_prod = self.ui.textBrowser_3
+        self.list_prod.setText(str(Variables.list_products))
 
-    def find_substitute_item_menu(self):
-        self.ui_fooditem = interface.fooditem_menu.Ui_MainWindow()
-        self.ui_fooditem.setupUi(self)
-        self.send_category = self.ui_fooditem.pushButton_3
-        self.category_choice = self.ui_fooditem.lineEdit
-        self.product_choice = self.ui_fooditem.lineEdit_2
+    def request_show_products_for_given_cat(self):
+        Variables.user_category_choice = self.category_choice.text()
+        self.request_access.find_products_for_a_given_category()
+        self.list_prod_cat = self.ui.textBrowser_4
+        self.list_prod_cat.setText(str(Variables.list_products_for_given_category))
 
-        self.get_input_category = self.ui_fooditem.pushButton_3
-        self.get_input_category.clicked.connect(self.get_category_input)
-        self.get_input_product = self.ui_fooditem.pushButton_4
-        # connect
-
-        # test
-        self.voir_produits_cat = self.ui_fooditem.pushButton_6
-        self.voir_produits_cat.clicked.connect(self.request_access.find_products_for_a_given_category)
-
-        self.back_button3 = self.ui_fooditem.pushButton_5
-        self.back_button3.clicked.connect(self.main_menu)
-        self.quit_button3 = self.ui_fooditem.pushButton
-        self.quit_button3.clicked.connect(quit)
-
-    def get_category_input(self):
-        # ici il considère que user_category_choice est différente
-        # mais qu'elle porte le même nom
-        user_category_choice = self.category_choice.text()
-        self.msg.setText(str(user_category_choice))
-        self.show_dialog()
-
+    def look_for_substitute(self):
+        Variables.user_product_choice = self.product_choice.text()
+        self.request_access.find_healthier_substitute(Variables.user_category_choice, Variables.user_product_choice)
+        self.substitute = self.ui.textBrowser_5
+        self.substitute.setText(str(Variables.substitute))
 
     def saved_products_menu(self):
         self.ui_savedproducts = interface.saved_products.Ui_MainWindow()

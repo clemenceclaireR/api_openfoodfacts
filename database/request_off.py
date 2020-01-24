@@ -1,13 +1,16 @@
 #! usr/bin/env python3
 # -*- Coding: UTF-8 -*-
 
-from PyQt5.QtWidgets import QMessageBox, QInputDialog
+from PyQt5.QtWidgets import QMessageBox
 
 
-list_categories = list()
-list_products = list()
-list_products_for_given_category = list()
-user_category_choice = ""
+class Variables:
+    list_categories = list()
+    list_products = list()
+    list_products_for_given_category = list()
+    user_category_choice = int
+    user_product_choice = int
+    substitute = list()
 
 
 class Request:
@@ -17,10 +20,6 @@ class Request:
 
         # from which row to start
         self.offset = 0
-
-        # store user_input
-        self.user_input = ""
-
 
     def show_dialog(self):
         self.msg.setIcon(QMessageBox.Information)
@@ -33,25 +32,30 @@ class Request:
         self.user_cursor.execute(request)
         for result in self.user_cursor.fetchall():
             count = 0
-            global list_categories
-            list_categories.append(str(result))
+            Variables.list_categories.append(str(result))
             count += 1
 
     def display_products(self, request):
         self.user_cursor.execute(request)
         for result in self.user_cursor.fetchall():
             count = 0
-            global list_products
-            list_products.append(str(result))
+            Variables.list_products.append(str(result))
             count += 1
 
     def display_products_for_given_categories(self, request):
         self.user_cursor.execute(request)
         for result in self.user_cursor.fetchall():
             count = 0
-            global list_products_for_given_category
-            list_products_for_given_category.append(str(result))
+            Variables.list_products_for_given_category.append(str(result))
             count += 1
+            for products in Variables.list_products_for_given_category:
+                self.msg.setText(products)
+                self.msg.exec()
+
+    def display_substitute(self, request, category, nutriscore):
+        self.user_cursor.execute(request, (category, nutriscore))
+        result = self.user_cursor.fetchall()
+        Variables.substitute.append(str(result))
 
     def show_categories(self, table, limit, off):
         self.offset = off
@@ -86,28 +90,21 @@ class Request:
         """
         name_table = list(table.keys())
         category = name_table[0]
+        return category
 
     def find_products_for_a_given_category(self):
         """
         Get products for a given category
         """
-        # get the name of the selected category
-        global user_category_choice
-        self.user_cursor.execute("SELECT name FROM Categories WHERE id = %s;" # ne trouve pas valeur à user_cat
-                                 % user_category_choice)
 
-        for name in self.user_cursor.fetchone():
-            self.msg.setText(name)
-            self.show_dialog()
+        request = ("SELECT OFFProducts.id, OFFProducts.name, brands, nutriscore \
+                   FROM Products as OFFProducts \
+                   INNER JOIN Categories \
+                   ON OFFProducts.id_category = Categories.id \
+                   WHERE Categories.id = %s \
+                   ORDER BY OFFProducts.id;" % Variables.user_category_choice)
 
-            # show the products for the chosen category
-            request = ("SELECT Products.id, Products.name, brands,\
-                            nutriscore FROM Products INNER JOIN Categories\
-                            ON Products.id_category = Categories.id\
-                            WHERE Categories.id = %s\
-                            ORDER BY Products.id;" % user_category_choice)
-
-            self.display_products_for_given_categories(request)
+        self.display_products_for_given_categories(request)
 
     def find_healthier_substitute(self, category, product):
         """
@@ -115,34 +112,22 @@ class Request:
         :param product:  product to substitute selected by the user
         """
         # save product into a variable
-        self.user_cursor.execute("SELECT * FROM Products\
-                        WHERE Products.id = " + product)
-        information = self.user_cursor.fetchone()
-        product_name = str(information[1])
-        nutriscore = str(information[4])
+        self.user_cursor.execute("SELECT * FROM Products \
+                                WHERE Products.id = " + product)
+        information = self.user_cursor.fetchone() # tuple
+        nutriscore = str(information[4]) # attention, ici parfois à 3
 
         # show products with a higher nutriscore
-        self.user_cursor.execute("SELECT Products.id, Products.name, Products.nutriscore,\
-                        Products.shop, Products.brands, Products.link\
-                        FROM Products INNER JOIN Categories \
-                        ON Products.id_category = Categories.id\
-                        WHERE Categories.id = %s \
-                        AND Products.nutriscore <= %s \
-                        ORDER BY Products.nutriscore", category, product_name, nutriscore)
+        request = ("SELECT Products.id, Products.name, Products.nutriscore, \
+                   Products.store, Products.brands, Products.link \
+                   FROM Products INNER JOIN Categories \
+                   ON Products.id_category = Categories.id \
+                   WHERE Categories.id = %s \
+                   AND Products.nutriscore <= %s \
+                   ORDER BY Products.nutriscore")
+                   #ORDER BY Products.nutriscore" % (category, nutriscore))
 
-        # This loop will display the index and the information related to
-        for substitute in self.user_cursor.fetchall():
-            count = 0
-            x = 0
-            while count < len(substitute):
-                self.msg.setText(str(x))
-                count += 1
-                x += 1
-
-        pass
+        self.display_substitute(request, category, nutriscore) # request est un tuple
 
 
-
-        #  programme propose un substitut, sa description, un magasin ou l'acheter
-        #  (le cas échéant) et un lien vers la page d'Open Food Facts concernant cet aliment.
         # proposer de sauvegarder en bb
