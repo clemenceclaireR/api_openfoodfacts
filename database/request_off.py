@@ -8,6 +8,7 @@ class Variables:
     list_categories = list()
     list_products = list()
     list_products_for_given_category = list()
+    list_saved_products = list()
     user_category_choice = int
     user_product_choice = int
     substitute = list()
@@ -60,6 +61,17 @@ class Request:
         self.user_cursor.execute(request, (category, nutriscore))
         result = self.user_cursor.fetchall()
         Variables.substitute.append(result)
+
+    def display_saved_products(self, request):
+        self.user_cursor.execute(request)
+        result = self.user_cursor.fetchall()
+        Variables.list_saved_products.append(result)
+
+    def show_saved_products(self):
+        request = "SELECT * FROM Favorites"
+        self.display_saved_products(request)
+
+
 
     def show_categories(self, table, limit, off):
         self.offset = off

@@ -117,9 +117,10 @@ class Main(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.status_bar = self.ui.textBrowser
-        self.status_bar.setText(str(kwargs)) #OK
-        self.display_saved_products = self.ui.pushButton_4 # OK
-        self.quit_button = self.ui.pushButton_5 # OK
+        self.status_bar.setText(str(kwargs))
+        self.display_saved_products = self.ui.pushButton_4
+        self.display_saved_products.clicked.connect(self.saved_products_menu)
+        self.quit_button = self.ui.pushButton_5
         self.display_categories = self.ui.pushButton
         self.display_categories.clicked.connect(self.request_show_categories)
         self.display_products = self.ui.pushButton_2
@@ -131,7 +132,6 @@ class Main(QtWidgets.QMainWindow):
         self.category_choice = self.ui.lineEdit
         self.product_choice = self.ui.lineEdit_2
         self.saved_product_choice = self.ui.lineEdit_3
-        self.display_saved_products.clicked.connect(self.saved_products_menu)
         self.save_button = self.ui.pushButton_7
         self.save_button.clicked.connect(self.get_product_to_save)
 
@@ -164,8 +164,11 @@ class Main(QtWidgets.QMainWindow):
         self.substitute.setText(str(Variables.substitute))
 
     def saved_products_menu(self):
+        self.request_access.show_saved_products()
         self.ui_savedproducts = interface.saved_products.Ui_MainWindow()
         self.ui_savedproducts.setupUi(self)
+        self.saved_product = self.ui_savedproducts.textBrowser
+        self.saved_product.setText(str(Variables.list_saved_products))
         self.back_button4 = self.ui_savedproducts.pushButton_5
         self.back_button4.clicked.connect(self.main_menu)
         self.quit_button4 = self.ui_savedproducts.pushButton
