@@ -11,12 +11,16 @@ class Variables:
     user_category_choice = int
     user_product_choice = int
     substitute = list()
+    product_to_register = int
+    nutriscore = ""
+    product_name = ""
 
 
 class Request:
-    def __init__(self, cursor):
+    def __init__(self, cursor, database):
         self.msg = QMessageBox()
         self.user_cursor = cursor
+        self.database = database
 
         # from which row to start
         self.offset = 0
@@ -55,7 +59,7 @@ class Request:
     def display_substitute(self, request, category, nutriscore):
         self.user_cursor.execute(request, (category, nutriscore))
         result = self.user_cursor.fetchall()
-        Variables.substitute.append(str(result))
+        Variables.substitute.append(result)
 
     def show_categories(self, table, limit, off):
         self.offset = off
@@ -114,8 +118,10 @@ class Request:
         # save product into a variable
         self.user_cursor.execute("SELECT * FROM Products \
                                 WHERE Products.id = " + product)
-        information = self.user_cursor.fetchone() # tuple
-        nutriscore = str(information[4]) # attention, ici parfois à 3
+        Variables.information = self.user_cursor.fetchone() # tuple
+        Variables.nutriscore = str(Variables.information[4]) # attention, ici parfois à 3
+        Variables.product_name = str(Variables.information[1])
+
 
         # show products with a higher nutriscore
         request = ("SELECT Products.id, Products.name, Products.nutriscore, \
@@ -125,9 +131,28 @@ class Request:
                    WHERE Categories.id = %s \
                    AND Products.nutriscore <= %s \
                    ORDER BY Products.nutriscore")
-                   #ORDER BY Products.nutriscore" % (category, nutriscore))
 
-        self.display_substitute(request, category, nutriscore) # request est un tuple
+        self.display_substitute(request, category, Variables.nutriscore)
 
+    def save_product(self, prodtosave):
+        # Get the product and save it into a variable
+        self.msg.setText(prodtosave)
+        self.msg.exec()
+        self.user_cursor.execute("SELECT * FROM Products WHERE Products.id = %s;" % prodtosave) # OK
+        information = self.user_cursor.fetchone()
+        sub_name = information[1] # nouveau nom
+        new_nutriscore = information[4] # nouveau nutriscore
+        new_link = information[5] # nouveau lien
+        new_store = information[6]
+        source_product_name = Variables.product_name
+        source_product_nutriscore = Variables.nutriscore
 
-        # proposer de sauvegarder en bb
+        # Insert the product into the table "Saved"
+        self.user_cursor.execute("INSERT INTO Favorites \
+                                (name_source_product, nutriscore_source_product, name_alternative_product, \
+                                nutriscore_alternative_product, store_alternative_product, link_alternative_product) \
+                                 VALUES ('%s', '%s', '%s', '%s', '%s', '%s');" # quotes for str
+                                 % (source_product_name, source_product_nutriscore, sub_name, new_nutriscore, new_store, new_link))
+
+        # Save changement
+        self.database.commit()

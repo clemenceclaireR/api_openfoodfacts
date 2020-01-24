@@ -9,9 +9,6 @@ from api_openfoodfacts import api_off
 from mysql.connector import errorcode
 from PyQt5 import QtWidgets
 import sys
-import interface.fooditem_menu
-import interface.categories_menu
-import interface.products_menu
 import interface.saved_products
 import interface.mainwindow
 from interface.mainwindow import Ui_MainWindow
@@ -33,8 +30,8 @@ class Main(QtWidgets.QMainWindow):
 
         # connection to the database
         try:
-            self.db = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST,
-                                              buffered=True, use_unicode=True)
+            self.database = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST,
+                                                    buffered=True, use_unicode=True)
             message_list.append("Connection to the database successfully established")
             self.display_message()
         except mysql.connector.Error as error:
@@ -49,10 +46,10 @@ class Main(QtWidgets.QMainWindow):
                 self.display_message()
         else:
             # creating cursor
-            self.cursor = self.db.cursor()
+            self.cursor = self.database.cursor()
 
         self.database_access = database.Database(self.cursor)
-        self.request_access = request_off.Request(self.cursor)
+        self.request_access = request_off.Request(self.cursor, self.database)
         self.api_access = api_off.Api(self.cursor)
 
     def init_db(self):
@@ -60,7 +57,7 @@ class Main(QtWidgets.QMainWindow):
         Create the database and its tables
         """
         self.database_access.use_db(db_connection.DATABASE)
-        self.database_access.create_tables(db_connection.TABLES, self.db)
+        self.database_access.create_tables(db_connection.TABLES, self.database)
 
     def get_data(self):
         """
@@ -79,10 +76,10 @@ class Main(QtWidgets.QMainWindow):
         message_list.append("Sorting categories")
         self.display_message()
 
-        self.api_access.insert_categories(self.db)
+        self.api_access.insert_categories(self.database)
         message_list.append("Inserting categories into the database")
         self.display_message()
-        self.api_access.insert_products(self.db)
+        self.api_access.insert_products(self.database)
         message_list.append("Database ready")
         #self.main_menu(message_list)
         self.display_message()
@@ -133,7 +130,10 @@ class Main(QtWidgets.QMainWindow):
         self.send_product.clicked.connect(self.look_for_substitute)
         self.category_choice = self.ui.lineEdit
         self.product_choice = self.ui.lineEdit_2
+        self.saved_product_choice = self.ui.lineEdit_3
         self.display_saved_products.clicked.connect(self.saved_products_menu)
+        self.save_button = self.ui.pushButton_7
+        self.save_button.clicked.connect(self.get_product_to_save)
 
         self.quit_button.clicked.connect(quit)
 
@@ -152,6 +152,10 @@ class Main(QtWidgets.QMainWindow):
         self.request_access.find_products_for_a_given_category()
         self.list_prod_cat = self.ui.textBrowser_4
         self.list_prod_cat.setText(str(Variables.list_products_for_given_category))
+
+    def get_product_to_save(self):
+        Variables.product_to_register = self.saved_product_choice.text()
+        self.request_access.save_product(Variables.product_to_register)
 
     def look_for_substitute(self):
         Variables.user_product_choice = self.product_choice.text()
