@@ -28,29 +28,27 @@ class Main(QtWidgets.QMainWindow):
         self.msg = QMessageBox()
         self.main_menu()
 
-        # connection to the database
+        # connection to mysql database
         try:
             self.database = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST,
                                                     buffered=True, use_unicode=True)
-            message_list.append("Connection to the database successfully established")
+            message_list.append("Connection to mysql successfully established")
             self.display_message()
         except mysql.connector.Error as error:
             if error.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 message_list.append("User name or password incorrect")
-                self.display_message()
+                print("User name or password incorrect")
             elif error.errno == errorcode.ER_BAD_DB_ERROR:
-                message_list.append("Database does not seem to exist")
-                self.display_message()
+                print("MySQL database does not seem to exist")
             else:
-                message_list.append(("Connection failed with following error : {}".format(error)))
-                self.display_message()
+                print("Connection failed with following error : {}".format(error))
         else:
             # creating cursor
             self.cursor = self.database.cursor()
 
+        self.api_access = api_off.Api(self.cursor)
         self.database_access = database.Database(self.cursor)
         self.request_access = request_off.Request(self.cursor, self.database)
-        self.api_access = api_off.Api(self.cursor)
 
     def init_db(self):
         """
@@ -102,13 +100,11 @@ class Main(QtWidgets.QMainWindow):
             self.cursor.execute("USE {};".format(db_connection.DATABASE))
             message_list.append("Using database")
             self.display_message()
-            # ! à appeler si les tables n'existent pas
-            #self.init_db()
-            self.get_data()
+            # self.get_data()
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
                 # if database doesn't exist
-                #self.init_db()
+                self.init_db()
                 self.get_data()
 
     # program interfaces

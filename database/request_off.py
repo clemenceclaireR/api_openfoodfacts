@@ -71,8 +71,6 @@ class Request:
         request = "SELECT * FROM Favorites"
         self.display_saved_products(request)
 
-
-
     def show_categories(self, table, limit, off):
         self.offset = off
 
