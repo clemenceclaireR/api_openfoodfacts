@@ -29,33 +29,24 @@ class Main(QtWidgets.QMainWindow):
         self.main_menu()
 
         # connection to mysql database
-        try:
-            self.database = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST,
+        self.database = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST,
                                                     buffered=True, use_unicode=True)
-            message_list.append("Connection to mysql successfully established")
-            self.display_message()
-        except mysql.connector.Error as error:
-            if error.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                message_list.append("User name or password incorrect")
-                print("User name or password incorrect")
-            elif error.errno == errorcode.ER_BAD_DB_ERROR:
-                print("MySQL database does not seem to exist")
-            else:
-                print("Connection failed with following error : {}".format(error))
-        else:
-            # creating cursor
-            self.cursor = self.database.cursor()
+        self.cursor = self.database.cursor()
 
         self.api_access = api_off.Api(self.cursor)
         self.database_access = database.Database(self.cursor)
         self.request_access = request_off.Request(self.cursor, self.database)
 
-    def init_db(self):
-        """
-        Create the database and its tables
-        """
-        self.database_access.use_db(db_connection.DATABASE)
-        self.database_access.create_tables(db_connection.TABLES, self.database)
+    #def init_db(self):
+     #   """
+      #  Create the database and its tables
+       # """
+        #self.database_access.use_db(db_connection.DATABASE)
+        #self.database_access.create_tables(db_connection.TABLES, self.database)
+
+    def format_list(self, list):
+        for elem in list:
+            print(*elem)
 
     def get_data(self):
         """
@@ -88,13 +79,13 @@ class Main(QtWidgets.QMainWindow):
 
     def display_message(self):
         self.main_menu(message_list)
-        for message in message_list:
-            return message
+        self.format_list(message_list)
 
     def main_loop(self):
         try:
             self.database_access.user_cursor.execute("USE {};".format(db_connection.DATABASE))
             message_list.append("Trying to use database")
+            #self.format_list(message_list)
             self.display_message()
 
             self.cursor.execute("USE {};".format(db_connection.DATABASE))
@@ -104,7 +95,7 @@ class Main(QtWidgets.QMainWindow):
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
                 # if database doesn't exist
-                self.init_db()
+                #self.init_db()
                 self.get_data()
 
     # program interfaces

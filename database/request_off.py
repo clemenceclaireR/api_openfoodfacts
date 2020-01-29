@@ -128,8 +128,8 @@ class Request:
         # save product into a variable
         self.user_cursor.execute("SELECT * FROM Products \
                                 WHERE Products.id = " + product)
-        Variables.information = self.user_cursor.fetchone() # tuple
-        Variables.nutriscore = str(Variables.information[4]) # attention, ici parfois à 3
+        Variables.information = self.user_cursor.fetchone()
+        Variables.nutriscore = str(Variables.information[4])
         Variables.product_name = str(Variables.information[1])
 
 
@@ -139,7 +139,7 @@ class Request:
                    FROM Products INNER JOIN Categories \
                    ON Products.id_category = Categories.id \
                    WHERE Categories.id = %s \
-                   AND Products.nutriscore <= %s \
+                   AND Products.nutriscore < %s \
                    ORDER BY Products.nutriscore")
 
         self.display_substitute(request, category, Variables.nutriscore)
