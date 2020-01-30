@@ -46,7 +46,8 @@ class Main(QtWidgets.QMainWindow):
 
     def format_list(self, list):
         for elem in list:
-            print(*elem)
+            msg = '\n'.join(elem)
+            return msg
 
     def get_data(self):
         """
@@ -85,7 +86,6 @@ class Main(QtWidgets.QMainWindow):
         try:
             self.database_access.user_cursor.execute("USE {};".format(db_connection.DATABASE))
             message_list.append("Trying to use database")
-            #self.format_list(message_list)
             self.display_message()
 
             self.cursor.execute("USE {};".format(db_connection.DATABASE))
@@ -127,18 +127,18 @@ class Main(QtWidgets.QMainWindow):
     def request_show_categories(self):
         self.request_access.show_categories(db_connection.TABLES, 100, 0)
         self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str(Variables.list_categories))
+        self.list_cat.setText(str("\n".join(Variables.list_categories)))
 
     def request_show_products(self):
         self.request_access.show_products(db_connection.TABLES, 100, 0)
         self.list_prod = self.ui.textBrowser_3
-        self.list_prod.setText(str(Variables.list_products))
+        self.list_prod.setText(str("\n".join(Variables.list_products)))
 
     def request_show_products_for_given_cat(self):
         Variables.user_category_choice = self.category_choice.text()
         self.request_access.find_products_for_a_given_category()
         self.list_prod_cat = self.ui.textBrowser_4
-        self.list_prod_cat.setText(str(Variables.list_products_for_given_category))
+        self.list_prod_cat.setText(str("\n".join(Variables.list_products_for_given_category)))
 
     def get_product_to_save(self):
         Variables.product_to_register = self.saved_product_choice.text()
@@ -148,14 +148,14 @@ class Main(QtWidgets.QMainWindow):
         Variables.user_product_choice = self.product_choice.text()
         self.request_access.find_healthier_substitute(Variables.user_category_choice, Variables.user_product_choice)
         self.substitute = self.ui.textBrowser_5
-        self.substitute.setText(str(Variables.substitute))
+        self.substitute.setText(str("\n".join(Variables.substitute)))
 
     def saved_products_menu(self):
         self.request_access.show_saved_products()
         self.ui_savedproducts = interface.saved_products.Ui_MainWindow()
         self.ui_savedproducts.setupUi(self)
         self.saved_product = self.ui_savedproducts.textBrowser
-        self.saved_product.setText(str(Variables.list_saved_products))
+        self.saved_product.setText(str(Variables.list_saved_products)) # ! format fait planter ici
         self.back_button4 = self.ui_savedproducts.pushButton_5
         self.back_button4.clicked.connect(self.main_menu)
         self.quit_button4 = self.ui_savedproducts.pushButton
