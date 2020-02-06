@@ -53,25 +53,26 @@ class Request:
             count = 0
             Variables.list_products_for_given_category.append(str(result))
             count += 1
-            for products in Variables.list_products_for_given_category:
-                self.msg.setText(products)
-                self.msg.exec()
 
     def display_substitute(self, request, category, nutriscore):
         self.user_cursor.execute(request, (category, nutriscore))
-        result = self.user_cursor.fetchall()
-        Variables.substitute.append(result)
+        for result in self.user_cursor.fetchall():
+            count = 0
+            #result = self.user_cursor.fetchall()
+            Variables.substitute.append(str(result))
+            count += 1
 
     def display_saved_products(self, request):
         self.user_cursor.execute(request)
         result = self.user_cursor.fetchall()
-        Variables.list_saved_products.append(result)
+        Variables.list_saved_products.append(str(result))
 
     def show_saved_products(self):
         request = "SELECT * FROM Favorites"
         self.display_saved_products(request)
 
     def show_categories(self, table, limit, off):
+        # enlever la limite ou faire bouton suivant
         self.offset = off
 
         name_table = list(table.keys())
@@ -146,8 +147,8 @@ class Request:
 
     def save_product(self, prodtosave):
         # Get the product and save it into a variable
-        self.msg.setText(prodtosave)
-        self.msg.exec()
+        self.msg.setText("Product saved")
+        self.msg.exec() # à déplacer en bas
         self.user_cursor.execute("SELECT * FROM Products WHERE Products.id = %s;" % prodtosave) # OK
         information = self.user_cursor.fetchone()
         sub_name = information[1] # nouveau nom
