@@ -30,32 +30,23 @@ Windows and macOS :
 
 Download the MySQL installer on : https://dev.mysql.com/downloads/mysql/
 
+**Python libraries**
+
+Go to the project folded and type in your terminal : _pip install -r requirements.txt_
+
 
 #### How to use
 
-The user launches program.py on a terminal. A window open ; he can choose between 5 options :
-
-1 - Display categories
-
-2 - Display products
-
-3 - Which food item do you like to trade ?
-
-4 - Display previously saved products
-
-5 - Quit
-
-If the user clicks on the first option, the program will ask him or her several questions :
-
-
-- Choose you category (user has to choose a number associated to a food category)
-- Choose your food item (user has to choose a number associated to a food item)
-- The program proposes a substitute with its description, a store where he or she can buy it, and a link to the associated Open Food Fact page.
-- The user can save the result in the database.
-
-If the user selects the fourth option, the program will display the previous saved results.
-
-If the user choose the fifth option, the program will stop.
+Start launch.py on a terminal. A window open and the program connect with your database, which will be
+filled with the API request automatically.
+You can see the categories and products available.
+Select a category number and the program display to you the product associated to this
+category.
+Then select the id of the product you would like to trade.
+If the program find a product from the same category but with a higher nutriscore,
+it will display it to you.
+You can then choose to save a substitute by entering its id.
+You can see your saved products, if you have some, on the right section of the window.
 
 
 
