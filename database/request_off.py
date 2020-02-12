@@ -4,7 +4,7 @@
 from PyQt5.QtWidgets import QMessageBox
 
 
-class Variables:
+class StoredData:
     list_categories = list()
     list_products = list()
     list_products_for_given_category = list()
@@ -37,21 +37,21 @@ class Request:
         self.user_cursor.execute(request)
         for result in self.user_cursor.fetchall():
             count = 0
-            Variables.list_categories.append(str(result))
+            StoredData.list_categories.append(str(result))
             count += 1
 
     def display_products(self, request):
         self.user_cursor.execute(request)
         for result in self.user_cursor.fetchall():
             count = 0
-            Variables.list_products.append(str(result))
+            StoredData.list_products.append(str(result))
             count += 1
 
     def display_products_for_given_categories(self, request):
         self.user_cursor.execute(request)
         for result in self.user_cursor.fetchall():
             count = 0
-            Variables.list_products_for_given_category.append(str(result))
+            StoredData.list_products_for_given_category.append(str(result))
             count += 1
 
     def display_substitute(self, request, category, nutriscore):
@@ -59,21 +59,21 @@ class Request:
         for result in self.user_cursor.fetchall():
             count = 0
             #result = self.user_cursor.fetchall()
-            Variables.substitute.append(str(result))
+            StoredData.substitute.append(str(result))
             count += 1
 
     def display_saved_products(self, request):
         self.user_cursor.execute(request)
-        result = self.user_cursor.fetchall()
-        Variables.list_saved_products.append(str(result))
+        for result in self.user_cursor.fetchall():
+            count = 0
+            StoredData.list_saved_products.append(str(result))
+            count += 1
 
     def show_saved_products(self):
         request = "SELECT * FROM Favorites"
         self.display_saved_products(request)
 
-    def show_categories(self, table, limit, off):
-        # enlever la limite ou faire bouton suivant
-        self.offset = off
+    def show_categories(self, table):
 
         name_table = list(table.keys())
         category = name_table[0]
@@ -81,21 +81,20 @@ class Request:
         # counting items in the table Categories
         self.user_cursor.execute("SELECT COUNT(*) FROM %s;" % category)
 
-        request = ("SELECT * FROM %s ORDER BY id LIMIT %s OFFSET %s;" %
-                   (category, limit, self.offset))
+        request = ("SELECT * FROM %s ORDER BY id;" %
+                   category)
 
         self.display_categories(request)
 
-    def show_products(self, table, limit, off):
-        self.offset = off
+    def show_products(self, table):
 
         name_table = list(table.keys())
         category = name_table[1]
 
         self.user_cursor.execute("SELECT COUNT(*) FROM %s;" % category)
 
-        request = ("SELECT id, name, brands FROM %s ORDER BY id LIMIT %s OFFSET %s;"
-                   % (category, limit, self.offset))
+        request = ("SELECT id, name, brands FROM %s ORDER BY id;"
+                   % category)
 
         self.display_products(request)
 
@@ -117,7 +116,7 @@ class Request:
                    INNER JOIN Categories \
                    ON OFFProducts.id_category = Categories.id \
                    WHERE Categories.id = %s \
-                   ORDER BY OFFProducts.id;" % Variables.user_category_choice)
+                   ORDER BY OFFProducts.id;" % StoredData.user_category_choice)
 
         self.display_products_for_given_categories(request)
 
@@ -129,9 +128,9 @@ class Request:
         # save product into a variable
         self.user_cursor.execute("SELECT * FROM Products \
                                 WHERE Products.id = " + product)
-        Variables.information = self.user_cursor.fetchone()
-        Variables.nutriscore = str(Variables.information[4])
-        Variables.product_name = str(Variables.information[1])
+        StoredData.information = self.user_cursor.fetchone()
+        StoredData.nutriscore = str(StoredData.information[4])
+        StoredData.product_name = str(StoredData.information[1])
 
 
         # show products with a higher nutriscore
@@ -143,20 +142,18 @@ class Request:
                    AND Products.nutriscore < %s \
                    ORDER BY Products.nutriscore")
 
-        self.display_substitute(request, category, Variables.nutriscore)
+        self.display_substitute(request, category, StoredData.nutriscore)
 
     def save_product(self, prodtosave):
         # Get the product and save it into a variable
-        self.msg.setText("Product saved")
-        self.msg.exec() # à déplacer en bas
         self.user_cursor.execute("SELECT * FROM Products WHERE Products.id = %s;" % prodtosave) # OK
         information = self.user_cursor.fetchone()
         sub_name = information[1] # nouveau nom
         new_nutriscore = information[4] # nouveau nutriscore
         new_link = information[5] # nouveau lien
         new_store = information[6]
-        source_product_name = Variables.product_name
-        source_product_nutriscore = Variables.nutriscore
+        source_product_name = StoredData.product_name
+        source_product_nutriscore = StoredData.nutriscore
 
         # Insert the product into the table "Saved"
         self.user_cursor.execute("INSERT INTO Favorites \
@@ -165,5 +162,5 @@ class Request:
                                  VALUES ('%s', '%s', '%s', '%s', '%s', '%s');" # quotes for str
                                  % (source_product_name, source_product_nutriscore, sub_name, new_nutriscore, new_store, new_link))
 
-        # Save changement
+        # Save changes
         self.database.commit()

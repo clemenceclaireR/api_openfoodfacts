@@ -31,19 +31,19 @@ class Api:
         Get a list of products with a request via the API.
         """
         # Make the request via the API.
-        for page in range(1, 5):
-            self.change_pages['page'] = page
-            products_request = requests.get(api_connection.PRODUCTS_LINK,
+        #for page in range(1, 5):
+            #self.change_pages['page'] = page
+        products_request = requests.get(api_connection.PRODUCTS_LINK,
                                             params=api_connection.PARAMETERS)
-            products = products_request.json()
-            # sort needed infos
-            for element in products['products']:
-                if not all(tag in element for tag in (
+        products = products_request.json()
+        # sort needed infos
+        for element in products['products']:
+            if not all(tag in element for tag in (
                         "product_name", "brands", "nutrition_grade_fr", "url",
                         "stores", "categories")):
-                    break
-                self.parsed_products.append(element)
-            page += 1
+                break
+            self.parsed_products.append(element)
+        #page += 1
 
     def delete_superfluous_categories(self):
         """
@@ -84,6 +84,7 @@ class Api:
         """
         Insert the categories into the database
         """
+        ### ICI, VOIR POURQUOI l'ID NE COMMENCE PAS TOUJOURS A 0 LORS DE L'INSERTION
         for element in self.sorted_categories:
             # rows with invalid data that cause the error are ignored
             self.user_cursor.execute("INSERT IGNORE INTO Categories(name) VALUES ('%s')"
@@ -97,8 +98,7 @@ class Api:
         count = 0
         while count < len(self.sorted_categories):
             category = str(count + 1)
-            self.user_cursor.execute("SELECT id, name FROM Categories\
-                WHERE id = " + category)
+            self.user_cursor.execute("SELECT id, name FROM Categories WHERE id = %s;" % category)
             category_saved = self.user_cursor.fetchone()
             self.id_name.append(category_saved)
             count += 1

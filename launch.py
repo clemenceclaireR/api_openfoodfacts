@@ -9,16 +9,12 @@ from api_openfoodfacts import api_off
 from mysql.connector import errorcode
 from PyQt5 import QtWidgets
 import sys
-import interface.saved_products
 import interface.mainwindow
 from interface.mainwindow import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
-from database.request_off import Variables
+from database.request_off import StoredData
 app = QtWidgets.QApplication(sys.argv)
 
-# RAJOUTER BOUTON POUR RAFFRAICHIR
-# Liste message statut affiche False quand Back de la section des produits sauvegardés :
-# formater correctement pour cadre vide ou garder messages précédents
 
 message_list = list()
 
@@ -41,12 +37,12 @@ class Main(QtWidgets.QMainWindow):
         self.database_access = database.Database(self.cursor)
         self.request_access = request_off.Request(self.cursor, self.database)
 
-    #def init_db(self):
-     #   """
-      #  Create the database and its tables
-       # """
-        #self.database_access.use_db(db_connection.DATABASE)
-        #self.database_access.create_tables(db_connection.TABLES, self.database)
+    def init_db(self):
+        """
+        Create the database and its tables
+        """
+        self.database_access.use_db(db_connection.DATABASE)
+        self.database_access.create_tables(db_connection.TABLES, self.database)
 
     def format_list(self, list):
         for elem in list:
@@ -96,11 +92,12 @@ class Main(QtWidgets.QMainWindow):
             self.cursor.execute("USE {};".format(db_connection.DATABASE))
             message_list.append("Using database")
             self.display_message(message_list)
-            # self.get_data()
+            self.request_access.show_saved_products()
+            self.request_access.show_categories(db_connection.TABLES)
+            self.request_access.show_products(db_connection.TABLES)
+            self.get_data()
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
-                # if database doesn't exist
-                #self.init_db()
                 self.get_data()
 
     # program interfaces
@@ -110,13 +107,19 @@ class Main(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.status_bar = self.ui.textBrowser
         self.status_bar.setText(str("\n".join(message_list)))
-        self.display_saved_products = self.ui.pushButton_4
-        self.display_saved_products.clicked.connect(self.saved_products_menu)
+        #self.display_saved_products = self.ui.pushButton_4
+        #self.display_saved_products.clicked.connect(self.saved_products_menu)
+        self.saved_product_field = self.ui.textBrowser_6
+        self.saved_product_field.setText(str("\n".join(StoredData.list_saved_products)))
         self.quit_button = self.ui.pushButton_5
-        self.display_categories = self.ui.pushButton
-        self.display_categories.clicked.connect(self.request_show_categories)
-        self.display_products = self.ui.pushButton_2
-        self.display_products.clicked.connect(self.request_show_products)
+        #self.display_categories = self.ui.pushButton
+        #self.display_categories.clicked.connect(self.request_show_categories)
+        self.list_cat = self.ui.textBrowser_2
+        self.list_cat.setText(str("\n".join(StoredData.list_categories)))
+        #self.display_products = self.ui.pushButton_2
+        #self.display_products.clicked.connect(self.request_show_products)
+        self.list_prod = self.ui.textBrowser_3
+        self.list_prod.setText(str("\n".join(StoredData.list_products)))
         self.send_category = self.ui.pushButton_3
         self.send_category.clicked.connect(self.request_show_products_for_given_cat)
         self.send_product = self.ui.pushButton_6
@@ -131,53 +134,45 @@ class Main(QtWidgets.QMainWindow):
         self.quit_button.clicked.connect(quit)
 
     def request_show_categories(self):
-        self.request_access.show_categories(db_connection.TABLES, 100, 0)
+        self.request_access.show_categories(db_connection.TABLES)
         self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str("\n".join(Variables.list_categories)))
+        self.list_cat.setText(str("\n".join(StoredData.list_categories)))
 
     def request_show_products(self):
-        self.request_access.show_products(db_connection.TABLES, 100, 0)
+        self.request_access.show_products(db_connection.TABLES)
         self.list_prod = self.ui.textBrowser_3
-        self.list_prod.setText(str("\n".join(Variables.list_products)))
+        self.list_prod.setText(str("\n".join(StoredData.list_products)))
 
     def request_show_products_for_given_cat(self):
-        Variables.user_category_choice = self.category_choice.text()
+        StoredData.user_category_choice = self.category_choice.text()
         try:
             self.request_access.find_products_for_a_given_category()
             self.list_prod_cat = self.ui.textBrowser_4
-            self.list_prod_cat.setText(str("\n".join(Variables.list_products_for_given_category)))
+            self.list_prod_cat.setText(str("\n".join(StoredData.list_products_for_given_category)))
         except:
-            self.msg.setText("Please enter a number.")
+            self.msg.setText("Please enter an existing number.")
             self.show_dialog()
 
     def get_product_to_save(self):
-        Variables.product_to_register = self.saved_product_choice.text()
+        StoredData.product_to_register = self.saved_product_choice.text()
         try:
-            self.request_access.save_product(Variables.product_to_register)
+            self.request_access.save_product(StoredData.product_to_register)
+            self.msg.setText("Product saved")
+            self.msg.exec()
         except:
-            self.msg.setText("Please enter a number.")
+            self.msg.setText("Please enter an existing number.")
             self.show_dialog()
 
     def look_for_substitute(self):
-        Variables.user_product_choice = self.product_choice.text()
+        StoredData.user_product_choice = self.product_choice.text()
         try:
-            self.request_access.find_healthier_substitute(Variables.user_category_choice, Variables.user_product_choice)
+            self.request_access.find_healthier_substitute(StoredData.user_category_choice,
+                                                          StoredData.user_product_choice)
             self.substitute = self.ui.textBrowser_5
-            self.substitute.setText(str("\n".join(Variables.substitute)))
+            self.substitute.setText(str("\n".join(StoredData.substitute)))
         except:
-            self.msg.setText("Please enter a number.")
+            self.msg.setText("Please enter an existing number.")
             self.show_dialog()
-
-    def saved_products_menu(self):
-        self.request_access.show_saved_products()
-        self.ui_savedproducts = interface.saved_products.Ui_MainWindow()
-        self.ui_savedproducts.setupUi(self)
-        self.saved_product = self.ui_savedproducts.textBrowser
-        self.saved_product.setText(str("\n".join(Variables.list_saved_products))) # ! format inef ici
-        self.back_button4 = self.ui_savedproducts.pushButton_5
-        self.back_button4.clicked.connect(self.main_menu)
-        self.quit_button4 = self.ui_savedproducts.pushButton
-        self.quit_button4.clicked.connect(quit)
 
 
 if __name__ == "__main__":
