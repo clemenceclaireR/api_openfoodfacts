@@ -1,4 +1,4 @@
-### **Program to find a food item alternative based on the Open Food Facts API.**
+### **Program to find a healthier food item, based on the Open Food Facts API.**
 
 #### **Description**
 
