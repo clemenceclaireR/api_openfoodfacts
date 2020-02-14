@@ -13,10 +13,8 @@ import interface.mainwindow
 from interface.mainwindow import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
 from database.request_off import StoredData
+import mysql.connector
 app = QtWidgets.QApplication(sys.argv)
-
-
-#message_list = list()
 
 
 class Main(QtWidgets.QMainWindow):
@@ -137,8 +135,11 @@ class Main(QtWidgets.QMainWindow):
             self.request_access.find_products_for_a_given_category()
             self.list_prod_cat = self.ui.textBrowser_4
             self.list_prod_cat.setText(str("\n".join(StoredData.list_products_for_given_category)))
-        except:
-            self.msg.setText("Please enter an existing number.")
+        except TypeError:
+            self.msg.setText("Please enter an attributed number.") # réagit pas ici
+            self.show_dialog()
+        except mysql.connector.Error as error:
+            self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
             self.show_dialog()
 
     def get_product_to_save(self):
@@ -149,8 +150,11 @@ class Main(QtWidgets.QMainWindow):
             self.msg.exec()
             self.request_access.show_saved_products()
             self.saved_product_field.setText(str("\n".join(StoredData.list_saved_products)))
-        except:
-            self.msg.setText("Please enter an existing number.")
+        except TypeError:
+            self.msg.setText("Please enter an attributed number.")
+            self.show_dialog()
+        except mysql.connector.Error as error:
+            self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
             self.show_dialog()
 
     def look_for_substitute(self):
@@ -160,8 +164,11 @@ class Main(QtWidgets.QMainWindow):
                                                           StoredData.user_product_choice)
             self.substitute = self.ui.textBrowser_5
             self.substitute.setText(str("\n".join(StoredData.substitute)))
-        except:
-            self.msg.setText("Please enter an existing number.")
+        except TypeError:
+            self.msg.setText("Please enter an attributed number.")
+            self.show_dialog()
+        except mysql.connector.Error as error:
+            self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
             self.show_dialog()
 
 

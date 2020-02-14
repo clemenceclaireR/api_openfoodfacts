@@ -102,7 +102,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Substitute finder"))
         self.pushButton_5.setText(_translate("MainWindow", "Quit"))
         self.label_2.setText(_translate("MainWindow", "Status :"))
         self.label_3.setText(_translate("MainWindow", "Enter the category\'s id of the product you would like to trade :"))
