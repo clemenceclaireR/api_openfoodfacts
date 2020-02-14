@@ -15,6 +15,7 @@ class StoredData:
     product_to_register = int
     nutriscore = ""
     product_name = ""
+    message_list = list()
 
 
 class Request:
@@ -58,7 +59,6 @@ class Request:
         self.user_cursor.execute(request, (category, nutriscore))
         for result in self.user_cursor.fetchall():
             count = 0
-            #result = self.user_cursor.fetchall()
             StoredData.substitute.append(str(result))
             count += 1
 
@@ -74,7 +74,6 @@ class Request:
         self.display_saved_products(request)
 
     def show_categories(self, table):
-
         name_table = list(table.keys())
         category = name_table[0]
 
@@ -164,3 +163,6 @@ class Request:
 
         # Save changes
         self.database.commit()
+
+    def update_database(self):
+        self.user_cursor.execute()

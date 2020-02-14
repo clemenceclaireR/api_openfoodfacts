@@ -16,7 +16,7 @@ from database.request_off import StoredData
 app = QtWidgets.QApplication(sys.argv)
 
 
-message_list = list()
+#message_list = list()
 
 
 class Main(QtWidgets.QMainWindow):
@@ -26,7 +26,6 @@ class Main(QtWidgets.QMainWindow):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
         self.msg = QMessageBox()
-        self.main_menu()
 
         # connection to mysql database
         self.database = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST,
@@ -37,12 +36,14 @@ class Main(QtWidgets.QMainWindow):
         self.database_access = database.Database(self.cursor)
         self.request_access = request_off.Request(self.cursor, self.database)
 
+        self.main_menu()
+
     def init_db(self):
         """
         Create the database and its tables
         """
         self.database_access.use_db(db_connection.DATABASE)
-        self.database_access.create_tables(db_connection.TABLES, self.database)
+        #self.database_access.create_tables(db_connection.TABLES, self.database)
 
     def format_list(self, list):
         for elem in list:
@@ -55,24 +56,24 @@ class Main(QtWidgets.QMainWindow):
         """
 
         self.api_access.get_products()
-        message_list.append("Getting products from the Api")
-        self.display_message(message_list)
+        StoredData.message_list.append("Getting products from the Api")
+        self.display_message(StoredData.message_list)
 
         self.api_access.delete_superfluous_categories()
-        message_list.append("Keeping just one category per product")
-        self.display_message(message_list)
+        StoredData.message_list.append("Keeping just one category per product")
+        self.display_message(StoredData.message_list)
 
         self.api_access.sort_categories()
-        message_list.append("Sorting categories")
-        self.display_message(message_list)
+        StoredData.message_list.append("Sorting categories")
+        self.display_message(StoredData.message_list)
 
         self.api_access.insert_categories(self.database)
-        message_list.append("Inserting categories into the database")
-        self.display_message(message_list)
+        StoredData.message_list.append("Inserting categories into the database")
+        self.display_message(StoredData.message_list)
+
         self.api_access.insert_products(self.database)
-        message_list.append("Database ready")
-        #self.main_menu(message_list)
-        self.display_message(message_list)
+        StoredData.message_list.append("Database ready")
+        self.display_message(StoredData.message_list)
 
     def show_dialog(self):
         self.msg.setIcon(QMessageBox.Information)
@@ -81,50 +82,47 @@ class Main(QtWidgets.QMainWindow):
     def display_message(self, mess_list):
         self.main_menu(str(mess_list))
         self.format_list(str(mess_list))
-        # ici avant pas de param, et message_list directement dans les self
 
     def main_loop(self):
         try:
             self.database_access.user_cursor.execute("USE {};".format(db_connection.DATABASE))
-            message_list.append("Trying to use database")
-            self.display_message(message_list)
+            StoredData.message_list.append("Trying to use database")
+            self.display_message(StoredData.message_list)
 
             self.cursor.execute("USE {};".format(db_connection.DATABASE))
-            message_list.append("Using database")
-            self.display_message(message_list)
-            self.request_access.show_saved_products()
-            self.request_access.show_categories(db_connection.TABLES)
-            self.request_access.show_products(db_connection.TABLES)
+            StoredData.message_list.append("Using database")
+            self.display_message(StoredData.message_list)
+
             self.get_data()
+
+            self.request_access.show_categories(db_connection.TABLES)
+            self.list_cat.setText(str("\n".join(StoredData.list_categories)))
+            self.request_access.show_products(db_connection.TABLES)
+            self.list_prod.setText(str("\n".join(StoredData.list_products)))
+            self.request_access.show_saved_products()
+
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
                 self.get_data()
 
-    # program interfaces
+    # program interface
 
     def main_menu(self, *kwargs):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.status_bar = self.ui.textBrowser
-        self.status_bar.setText(str("\n".join(message_list)))
-        #self.display_saved_products = self.ui.pushButton_4
-        #self.display_saved_products.clicked.connect(self.saved_products_menu)
+        self.status_bar.setText(str("\n".join(StoredData.message_list)))
         self.saved_product_field = self.ui.textBrowser_6
         self.saved_product_field.setText(str("\n".join(StoredData.list_saved_products)))
         self.quit_button = self.ui.pushButton_5
-        #self.display_categories = self.ui.pushButton
-        #self.display_categories.clicked.connect(self.request_show_categories)
         self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str("\n".join(StoredData.list_categories)))
-        #self.display_products = self.ui.pushButton_2
-        #self.display_products.clicked.connect(self.request_show_products)
+        self.list_cat.setText(str("\n".join(StoredData.list_categories))) # vide quand 1er lancement
         self.list_prod = self.ui.textBrowser_3
         self.list_prod.setText(str("\n".join(StoredData.list_products)))
         self.send_category = self.ui.pushButton_3
         self.send_category.clicked.connect(self.request_show_products_for_given_cat)
         self.send_product = self.ui.pushButton_6
         self.send_product.clicked.connect(self.look_for_substitute)
-        # RAJOUTER CAS OU IL NY A PAS DE SUBSTITUT
         self.category_choice = self.ui.lineEdit
         self.product_choice = self.ui.lineEdit_2
         self.saved_product_choice = self.ui.lineEdit_3
@@ -132,16 +130,6 @@ class Main(QtWidgets.QMainWindow):
         self.save_button.clicked.connect(self.get_product_to_save)
 
         self.quit_button.clicked.connect(quit)
-
-    def request_show_categories(self):
-        self.request_access.show_categories(db_connection.TABLES)
-        self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str("\n".join(StoredData.list_categories)))
-
-    def request_show_products(self):
-        self.request_access.show_products(db_connection.TABLES)
-        self.list_prod = self.ui.textBrowser_3
-        self.list_prod.setText(str("\n".join(StoredData.list_products)))
 
     def request_show_products_for_given_cat(self):
         StoredData.user_category_choice = self.category_choice.text()
@@ -159,6 +147,8 @@ class Main(QtWidgets.QMainWindow):
             self.request_access.save_product(StoredData.product_to_register)
             self.msg.setText("Product saved")
             self.msg.exec()
+            self.request_access.show_saved_products()
+            self.saved_product_field.setText(str("\n".join(StoredData.list_saved_products)))
         except:
             self.msg.setText("Please enter an existing number.")
             self.show_dialog()

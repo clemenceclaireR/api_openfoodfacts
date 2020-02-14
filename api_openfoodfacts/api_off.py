@@ -5,6 +5,7 @@ import requests
 from . import api_connection
 from PyQt5.QtWidgets import QMessageBox
 from mysql.connector import Error
+from database.request_off import StoredData
 
 
 class Api:
@@ -31,8 +32,6 @@ class Api:
         Get a list of products with a request via the API.
         """
         # Make the request via the API.
-        #for page in range(1, 5):
-            #self.change_pages['page'] = page
         products_request = requests.get(api_connection.PRODUCTS_LINK,
                                             params=api_connection.PARAMETERS)
         products = products_request.json()
@@ -43,7 +42,6 @@ class Api:
                         "stores", "categories")):
                 break
             self.parsed_products.append(element)
-        #page += 1
 
     def delete_superfluous_categories(self):
         """
@@ -67,8 +65,7 @@ class Api:
             self.msg.setText("{}".format(e))
             self.show_dialog()
         else:
-            self.msg.setText("Categories parsed successfully")
-            self.show_dialog()
+            StoredData.message_list.append("Categories parsed successfully")
 
     def sort_categories(self):
         categories = list()
@@ -76,22 +73,19 @@ class Api:
             categories.append(element['categories'])
 
         self.sorted_categories = sorted(set(categories))
-        self.msg.setText("Categories sorted successfully")
-        self.show_dialog()
+        StoredData.message_list.append("Categories sorted successfully")
         return self.sorted_categories
 
     def insert_categories(self, database):
         """
         Insert the categories into the database
         """
-        ### ICI, VOIR POURQUOI l'ID NE COMMENCE PAS TOUJOURS A 0 LORS DE L'INSERTION
         for element in self.sorted_categories:
             # rows with invalid data that cause the error are ignored
             self.user_cursor.execute("INSERT IGNORE INTO Categories(name) VALUES ('%s')"
                                      % element)
         database.commit()
-        self.msg.setText("Categories inserted successfully.")
-        self.show_dialog()
+        StoredData.message_list.append("Categories inserted successfully.")
 
     def get_categories_name_and_ids(self):
         self.id_name = list()
@@ -132,8 +126,7 @@ class Api:
             self.msg.setText("{}".format(e))
             self.show_dialog()
         else:
-            self.msg.setText("Products inserted successfully in the database.")
-            self.show_dialog()
+            StoredData.message_list.append("Products inserted successfully in the database.")
             database.commit()
 
 
