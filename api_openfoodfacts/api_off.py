@@ -2,10 +2,10 @@
 # -*- Coding: UTF-8 -*-
 
 import requests
-from . import api_connection
 from PyQt5.QtWidgets import QMessageBox
 from mysql.connector import Error
 from database.request_off import StoredData
+from .api_connection import APIInformation
 
 
 class Api:
@@ -13,6 +13,7 @@ class Api:
     This class will make the connection with the OpenFoodFacts API.
     It will make the different requests needed to create a list of products and categories.
     """
+
     def __init__(self, cursor):
         self.msg = QMessageBox()
         self.categories = list()
@@ -20,10 +21,9 @@ class Api:
         self.parsed_categories = list()
         self.parsed_products = list()
         self.id_name = list()
-        self.change_pages = api_connection.PARAMETERS
         self.user_cursor = cursor
 
-    def show_dialog(self):
+    def show_dialog(self): # DRY
         self.msg.setIcon(QMessageBox.Information)
         self.msg.exec_()
 
@@ -32,14 +32,14 @@ class Api:
         Get a list of products with a request via the API.
         """
         # Make the request via the API.
-        products_request = requests.get(api_connection.PRODUCTS_LINK,
-                                            params=api_connection.PARAMETERS)
+        products_request = requests.get(APIInformation.PRODUCTS_LINK,
+                                        params=APIInformation.PARAMETERS)
         products = products_request.json()
         # sort needed infos
         for element in products['products']:
             if not all(tag in element for tag in (
-                        "product_name", "brands", "nutrition_grade_fr", "url",
-                        "stores", "categories")):
+                    "product_name", "brands", "nutrition_grade_fr", "url",
+                    "stores", "categories")):
                 break
             self.parsed_products.append(element)
 
@@ -119,14 +119,12 @@ class Api:
                 self.user_cursor.execute("INSERT IGNORE INTO Products(\
                     name, id_category, brands, nutriscore, link, store) VALUES(\
                     %s, %s, %s, %s, %s, %s)", (
-                        element['product_name'], element['categories'],
-                        element['brands'], element['nutrition_grade_fr'],
-                        element['url'], element['stores']))
+                    element['product_name'], element['categories'],
+                    element['brands'], element['nutrition_grade_fr'],
+                    element['url'], element['stores']))
         except Error as e:
             self.msg.setText("{}".format(e))
             self.show_dialog()
         else:
             StoredData.message_list.append("Products inserted successfully in the database.")
             database.commit()
-
-

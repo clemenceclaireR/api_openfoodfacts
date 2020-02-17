@@ -3,18 +3,16 @@
 
 import mysql.connector
 
-from database import db_connection, request_off, database
-from database.db_connection import *
+from database.db_connection import DatabaseInformation
 from api_openfoodfacts import api_off
 from mysql.connector import errorcode
 from PyQt5 import QtWidgets
 import sys
-import interface.mainwindow
-from interface.mainwindow import Ui_MainWindow
 from PyQt5.QtWidgets import QMessageBox
 from database.request_off import StoredData
 import mysql.connector
-app = QtWidgets.QApplication(sys.argv)
+from interface.mainwindow import Ui_MainWindow
+from database import request_off, database
 
 
 class Main(QtWidgets.QMainWindow):
@@ -26,8 +24,8 @@ class Main(QtWidgets.QMainWindow):
         self.msg = QMessageBox()
 
         # connection to mysql database
-        self.database = mysql.connector.connect(user=USER, password=PASSWORD, host=HOST,
-                                                    buffered=True, use_unicode=True)
+        self.database = mysql.connector.connect(user=DatabaseInformation.USER, password=DatabaseInformation.PASSWORD,
+                                                host=DatabaseInformation.HOST, buffered=True, use_unicode=True)
         self.cursor = self.database.cursor()
 
         self.api_access = api_off.Api(self.cursor)
@@ -36,12 +34,15 @@ class Main(QtWidgets.QMainWindow):
 
         self.main_menu()
 
+    def show_dialog(self):
+        self.msg.setIcon(QMessageBox.Information)
+        self.msg.exec_()
+
     def init_db(self):
         """
         Create the database and its tables
         """
-        self.database_access.use_db(db_connection.DATABASE)
-        #self.database_access.create_tables(db_connection.TABLES, self.database)
+        self.database_access.use_db(DatabaseInformation.DATABASE)
 
     def format_list(self, list):
         for elem in list:
@@ -73,29 +74,25 @@ class Main(QtWidgets.QMainWindow):
         StoredData.message_list.append("Database ready")
         self.display_message(StoredData.message_list)
 
-    def show_dialog(self):
-        self.msg.setIcon(QMessageBox.Information)
-        self.msg.exec_()
-
     def display_message(self, mess_list):
         self.main_menu(str(mess_list))
         self.format_list(str(mess_list))
 
     def main_loop(self):
         try:
-            self.database_access.user_cursor.execute("USE {};".format(db_connection.DATABASE))
+            self.database_access.cursor.execute("USE {};".format(DatabaseInformation.DATABASE))
             StoredData.message_list.append("Trying to use database")
             self.display_message(StoredData.message_list)
 
-            self.cursor.execute("USE {};".format(db_connection.DATABASE))
+            self.cursor.execute("USE {};".format(DatabaseInformation.DATABASE))
             StoredData.message_list.append("Using database")
             self.display_message(StoredData.message_list)
 
             self.get_data()
 
-            self.request_access.show_categories(db_connection.TABLES)
+            self.request_access.show_categories(DatabaseInformation.TABLES)
             self.list_cat.setText(str("\n".join(StoredData.list_categories)))
-            self.request_access.show_products(db_connection.TABLES)
+            self.request_access.show_products(DatabaseInformation.TABLES)
             self.list_prod.setText(str("\n".join(StoredData.list_products)))
             self.request_access.show_saved_products()
 
@@ -114,7 +111,7 @@ class Main(QtWidgets.QMainWindow):
         self.saved_product_field.setText(str("\n".join(StoredData.list_saved_products)))
         self.quit_button = self.ui.pushButton_5
         self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str("\n".join(StoredData.list_categories))) # vide quand 1er lancement
+        self.list_cat.setText(str("\n".join(StoredData.list_categories)))
         self.list_prod = self.ui.textBrowser_3
         self.list_prod.setText(str("\n".join(StoredData.list_products)))
         self.send_category = self.ui.pushButton_3
@@ -136,9 +133,9 @@ class Main(QtWidgets.QMainWindow):
             self.list_prod_cat = self.ui.textBrowser_4
             self.list_prod_cat.setText(str("\n".join(StoredData.list_products_for_given_category)))
         except TypeError:
-            self.msg.setText("Please enter an attributed number.") # réagit pas ici
+            self.msg.setText("Please enter an attributed number.")
             self.show_dialog()
-        except mysql.connector.Error as error:
+        except mysql.connector.Error as error: # marche
             self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
             self.show_dialog()
 
@@ -147,12 +144,9 @@ class Main(QtWidgets.QMainWindow):
         try:
             self.request_access.save_product(StoredData.product_to_register)
             self.msg.setText("Product saved")
-            self.msg.exec()
+            self.show_dialog()
             self.request_access.show_saved_products()
             self.saved_product_field.setText(str("\n".join(StoredData.list_saved_products)))
-        except TypeError:
-            self.msg.setText("Please enter an attributed number.")
-            self.show_dialog()
         except mysql.connector.Error as error:
             self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
             self.show_dialog()
@@ -168,11 +162,12 @@ class Main(QtWidgets.QMainWindow):
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()
         except mysql.connector.Error as error:
-            self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
+            self.msg.setText("Please enter a number. \nError : {}".format(error))
             self.show_dialog()
 
 
 if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
     widget = Main()
     widget.show()
     widget.main_loop()
