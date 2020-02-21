@@ -20,7 +20,6 @@ class StoredData:
 
 class Request:
     def __init__(self, cursor, database):
-        self.msg = QMessageBox()
         self.cursor = cursor
         self.database = database
 

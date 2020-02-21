@@ -13,6 +13,8 @@ class APIInformation:
         "tagtype_0": 'categories',
         "tag_contains_0": 'contains',
         "page": 1,
-        "page_size": 1000,
-        "json": '1'
+        "page_size": 1000000, # jouer avec cette valeur
+        "json": '1',
     }
+    PAGE_MIN = 1
+    PAGE_MAX = 20

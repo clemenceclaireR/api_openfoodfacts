@@ -2,8 +2,6 @@
 # -*- Coding: UTF-8 -*-
 
 import mysql.connector
-from PyQt5.QtWidgets import QMessageBox
-from mysql.connector import errorcode
 from database.request_off import StoredData
 
 
@@ -14,11 +12,6 @@ class Database:
 
     def __init__(self, cursor):
         self.cursor = cursor
-        self.msg = QMessageBox()
-
-    def show_dialog(self): # DRY
-        self.msg.setIcon(QMessageBox.Information)
-        self.msg.exec_()
 
     def use_db(self, dbname):
         """
@@ -32,16 +25,5 @@ class Database:
         else:
             StoredData.message_list.append("Database status ok")
 
-    def make_request(self, request):
-        """
-        make SQL request
-        """
-        try:
-            self.cursor.execute(request)
-        except Exception as error:
-            self.msg.setText("Incorrect SQL query: {} \n Error : {} ".format(request, error))
-            self.show_dialog()
-            return 0
-        else:
-            return 1
+
 

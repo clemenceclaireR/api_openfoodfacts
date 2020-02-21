@@ -13,7 +13,7 @@ from database.request_off import StoredData
 import mysql.connector
 from interface.mainwindow import Ui_MainWindow
 from database import request_off, database
-
+from mysql.connector import Error
 
 class Main(QtWidgets.QMainWindow):
     """
@@ -58,8 +58,14 @@ class Main(QtWidgets.QMainWindow):
         StoredData.message_list.append("Getting products from the Api")
         self.display_message(StoredData.message_list)
 
-        self.api_access.delete_superfluous_categories()
-        StoredData.message_list.append("Keeping just one category per product")
+        try:
+            self.api_access.delete_superfluous_categories()
+            StoredData.message_list.append("Keeping just one category per product")
+        except Error as e:
+            self.msg.setText("{}".format(e))
+            self.show_dialog()
+        else:
+            StoredData.message_list.append("Categories parsed successfully")
         self.display_message(StoredData.message_list)
 
         self.api_access.sort_categories()
@@ -70,8 +76,12 @@ class Main(QtWidgets.QMainWindow):
         StoredData.message_list.append("Inserting categories into the database")
         self.display_message(StoredData.message_list)
 
-        self.api_access.insert_products(self.database)
-        StoredData.message_list.append("Database ready")
+        try:
+            self.api_access.insert_products(self.database)
+            StoredData.message_list.append("Database ready")
+        except Error as e:
+            self.msg.setText("{}".format(e))
+            self.show_dialog()
         self.display_message(StoredData.message_list)
 
     def display_message(self, mess_list):
