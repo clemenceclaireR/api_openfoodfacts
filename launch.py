@@ -15,6 +15,7 @@ from interface.mainwindow import Ui_MainWindow
 from database import request_off, database
 from mysql.connector import Error
 
+
 class Main(QtWidgets.QMainWindow):
     """
     Main program which will interacts with the API and the database
@@ -35,29 +36,38 @@ class Main(QtWidgets.QMainWindow):
         self.main_menu()
 
     def show_dialog(self):
+        """
+        open a QMessageBox
+        """
         self.msg.setIcon(QMessageBox.Information)
         self.msg.exec_()
 
-    def init_db(self):
-        """
-        Create the database and its tables
-        """
-        self.database_access.use_db(DatabaseInformation.DATABASE)
-
     def format_list(self, list):
+        """
+        Performs line break on a given list
+        """
         for elem in list:
             msg = '\n'.join(elem)
             return msg
 
-    def get_data(self):
+    def fetch_products(self):
         """
-        calls the api_openfoodfacts class of api_off.py file
+        Call function to get products from the api and check
+        for errors
         """
-
-        self.api_access.get_products()
-        StoredData.message_list.append("Getting products from the Api")
+        try:
+            self.api_access.get_products()
+            StoredData.message_list.append("Getting products from the Api")
+        except Error as e:
+            self.msg.setText("{}".format(e))
+            self.show_dialog()
         self.display_message(StoredData.message_list)
 
+    def keep_only_one_category(self):
+        """
+        Call function to keep one category per product and
+        check for errors
+        """
         try:
             self.api_access.delete_superfluous_categories()
             StoredData.message_list.append("Keeping just one category per product")
@@ -68,14 +78,36 @@ class Main(QtWidgets.QMainWindow):
             StoredData.message_list.append("Categories parsed successfully")
         self.display_message(StoredData.message_list)
 
-        self.api_access.sort_categories()
-        StoredData.message_list.append("Sorting categories")
+    def sort_categories(self):
+        """
+        Call function to sort categories and check for errors
+        """
+        try:
+            self.api_access.sort_categories()
+            StoredData.message_list.append("Sorting categories")
+        except Error as e:
+            self.msg.setText("{}".format(e))
+            self.show_dialog()
         self.display_message(StoredData.message_list)
 
-        self.api_access.insert_categories(self.database)
-        StoredData.message_list.append("Inserting categories into the database")
+    def insert_categories(self):
+        """
+        Call function to insert categories in the database and
+        check for errors
+        """
+        try:
+            self.api_access.insert_categories(self.database)
+            StoredData.message_list.append("Inserting categories into the database")
+        except Error as e:
+            self.msg.setText("{}".format(e))
+            self.show_dialog()
         self.display_message(StoredData.message_list)
 
+    def insert_products(self):
+        """
+        Call function to insert products in the database and
+        check for errors
+        """
         try:
             self.api_access.insert_products(self.database)
             StoredData.message_list.append("Database ready")
@@ -84,11 +116,31 @@ class Main(QtWidgets.QMainWindow):
             self.show_dialog()
         self.display_message(StoredData.message_list)
 
+    def get_data(self):
+        """
+        Call the needed functions in order to get data from
+        the api and parse it, then insert it in the database
+        """
+        self.fetch_products()
+        self.keep_only_one_category()
+        self.sort_categories()
+        self.insert_categories()
+        self.insert_products()
+
     def display_message(self, mess_list):
+        """
+        Actualize the data's status in the program window
+        """
         self.main_menu(str(mess_list))
         self.format_list(str(mess_list))
 
     def main_loop(self):
+        """
+        Main loop of the program :
+        - connection with the database
+        - get the data from the api to write/actualize it in the database
+        - displaying of the categories, products and saved products
+        """
         try:
             self.database_access.cursor.execute("USE {};".format(DatabaseInformation.DATABASE))
             StoredData.message_list.append("Trying to use database")
@@ -98,13 +150,14 @@ class Main(QtWidgets.QMainWindow):
             StoredData.message_list.append("Using database")
             self.display_message(StoredData.message_list)
 
-            self.get_data()
+            #self.get_data()
 
             self.request_access.show_categories(DatabaseInformation.TABLES)
             self.list_cat.setText(str("\n".join(StoredData.list_categories)))
             self.request_access.show_products(DatabaseInformation.TABLES)
             self.list_prod.setText(str("\n".join(StoredData.list_products)))
             self.request_access.show_saved_products()
+            self.saved_product_field.setText(str("\n".join(StoredData.list_saved_products)))
 
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:
@@ -113,6 +166,9 @@ class Main(QtWidgets.QMainWindow):
     # program interface
 
     def main_menu(self, *kwargs):
+        """
+        Initialize and put associated data in the QWidgets objects
+        """
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.status_bar = self.ui.textBrowser
@@ -137,31 +193,55 @@ class Main(QtWidgets.QMainWindow):
         self.quit_button.clicked.connect(quit)
 
     def request_show_products_for_given_cat(self):
+        """
+        Get user's category input and return the associated products
+        """
+        StoredData.list_products_for_given_category = [] # raffraichit
         StoredData.user_category_choice = self.category_choice.text()
+        # convert data to int in order to verify its value
+        StoredData.int_user_category_choice = int(self.category_choice.text())
+
+        self.cursor.execute('SELECT max(id) FROM Categories')
+        max_id = self.cursor.fetchone()[0]
+
+        # if user input bigger than the max id, alert
+        if StoredData.int_user_category_choice > max_id:
+            self.msg.setText(str("This number is too big."))
+            self.show_dialog()
         try:
             self.request_access.find_products_for_a_given_category()
             self.list_prod_cat = self.ui.textBrowser_4
             self.list_prod_cat.setText(str("\n".join(StoredData.list_products_for_given_category)))
-        except TypeError:
-            self.msg.setText("Please enter an attributed number.")
-            self.show_dialog()
-        except mysql.connector.Error as error: # marche
+        except mysql.connector.Error as error:
             self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
             self.show_dialog()
 
     def get_product_to_save(self):
+        """
+        Get user's substitute choice input and save it in the database
+        """
         StoredData.product_to_register = self.saved_product_choice.text()
         try:
             self.request_access.save_product(StoredData.product_to_register)
             self.msg.setText("Product saved")
             self.show_dialog()
+            # raffraichit
+            StoredData.list_saved_products = []
             self.request_access.show_saved_products()
-            self.saved_product_field.setText(str("\n".join(StoredData.list_saved_products)))
+            self.saved_product_field.setText(str("\n".join
+                                                 (StoredData.list_saved_products)))
+        except TypeError:
+            self.msg.setText("Please enter an attributed number.")
+            self.show_dialog()
         except mysql.connector.Error as error:
             self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
             self.show_dialog()
 
     def look_for_substitute(self):
+        """
+        Get user's product choice to trade and display the alternatives
+        """
+        StoredData.substitute = [] # raffraichit
         StoredData.user_product_choice = self.product_choice.text()
         try:
             self.request_access.find_healthier_substitute(StoredData.user_category_choice,

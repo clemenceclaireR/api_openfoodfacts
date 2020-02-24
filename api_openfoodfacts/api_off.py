@@ -59,6 +59,10 @@ class Api:
                 counter += 1
 
     def sort_categories(self):
+        """
+        Extract category from the parsed product list
+        and add it to a list of categories
+        """
         categories = list()
         for element in self.parsed_products:
             categories.append(element['categories'])
@@ -79,6 +83,10 @@ class Api:
         StoredData.message_list.append("Categories inserted successfully.")
 
     def get_categories_name_and_ids(self):
+        """
+        Get the id and the name of a category in the Categories table
+        and save it into a list
+        """
         self.id_name = list()
         count = 0
         while count < len(self.sorted_categories):
@@ -90,13 +98,20 @@ class Api:
         return self.id_name
 
     def convert_categories_to_product_list(self):
+        """
+        get the name of categories and get its number
+        in order to use it for the products in the
+        insert_products function
+        """
         self.get_categories_name_and_ids()
         ids = range(0, len(self.id_name))
 
         for n in ids:
             for product in self.parsed_products:
-                if product['categories'] == self.id_name[n][1]:
+                if product['categories'] == self.id_name[n][1]: # name
+                    #print(product['categories'], self.id_name[n][1])
                     product['categories'] = self.id_name[n][0]
+                    #print(product['categories'], self.id_name[n][0]) # id
 
         return self.parsed_products
 

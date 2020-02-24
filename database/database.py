@@ -7,7 +7,7 @@ from database.request_off import StoredData
 
 class Database:
     """
-    Selection and requests for a given database
+    Selection for a given database
     """
 
     def __init__(self, cursor):
