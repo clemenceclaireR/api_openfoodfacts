@@ -196,10 +196,15 @@ class Main(QtWidgets.QMainWindow):
         """
         Get user's category input and return the associated products
         """
-        StoredData.list_products_for_given_category = [] # raffraichit
+        # refresh list when this function is called
+        StoredData.list_products_for_given_category = []
         StoredData.user_category_choice = self.category_choice.text()
         # convert data to int in order to verify its value
-        StoredData.int_user_category_choice = int(self.category_choice.text())
+        # if it's a text, no need to convert : pass
+        try:
+            StoredData.int_user_category_choice = int(self.category_choice.text())
+        except ValueError:
+            pass
 
         self.cursor.execute('SELECT max(id) FROM Categories')
         max_id = self.cursor.fetchone()[0]

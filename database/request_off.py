@@ -19,13 +19,17 @@ class StoredData:
 
 
 class Request:
+    """
+    This class contains the methods which will interact
+    with the database in order to get and display informations
+    """
     def __init__(self, cursor, database):
         self.cursor = cursor
         self.database = database
 
     def display_categories(self, request):
         """
-        display results for the different menus
+        display the list of categories from the database
         """
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
@@ -34,6 +38,9 @@ class Request:
             count += 1
 
     def display_products(self, request):
+        """
+        display the list of products from the database
+        """
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
             count = 0
@@ -41,6 +48,9 @@ class Request:
             count += 1
 
     def display_products_for_given_categories(self, request):
+        """
+        display the products associated to a given category
+        """
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
             count = 0
@@ -48,6 +58,9 @@ class Request:
             count += 1
 
     def display_substitute(self, request, category, nutriscore):
+        """
+        display substitutes for a given product
+        """
         self.cursor.execute(request, (category, nutriscore))
         for result in self.cursor.fetchall():
             count = 0
@@ -55,6 +68,9 @@ class Request:
             count += 1
 
     def display_saved_products(self, request):
+        """
+        display previously saved products
+        """
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
             count = 0
@@ -62,11 +78,19 @@ class Request:
             count += 1
 
     def show_saved_products(self):
+        """
+        Ask the database for all the entries from the Favorite table
+        and display it
+        """
         request = "SELECT * FROM Favorites"
         self.display_saved_products(request)
 
     def show_categories(self, table):
-
+        """
+        Get the keys from a given table in order to get
+        its name and ask the database for its entries,
+        then display it
+        """
         name_table = list(table.keys())
         category = name_table[0]
 
@@ -79,7 +103,11 @@ class Request:
         self.display_categories(request)
 
     def show_products(self, table):
-
+        """
+        Get the keys from a given tame in order to get
+        its name and ask the database for its entries,
+        then display it
+        """
         name_table = list(table.keys())
         category = name_table[1]
 
@@ -90,17 +118,18 @@ class Request:
 
         self.display_products(request)
 
-    def select_category(self, table):
-        """
-        Select the category associated to the user input
-        """
-        name_table = list(table.keys())
-        category = name_table[0]
-        return category
+    #def select_category(self, table):
+     #   """
+      #  Select the category associated to the user input
+       # """
+        #name_table = list(table.keys())
+        #category = name_table[0]
+        #return category
 
     def find_products_for_a_given_category(self):
         """
-        Get products for a given category
+        Ask the database for products information for a given category
+        ans display it
         """
         request = ("SELECT OFFProducts.id, OFFProducts.name, brands, nutriscore \
                    FROM Products as OFFProducts \
@@ -113,6 +142,9 @@ class Request:
 
     def find_healthier_substitute(self, category, product):
         """
+        Ask the database for the products from the same
+        category that the user selected, but with a higher nutriscore
+        then display it
         :param category: category associated by the product selected by the user
         :param product:  product to substitute selected by the user
         """
@@ -134,6 +166,11 @@ class Request:
         self.display_substitute(request, category, StoredData.nutriscore)
 
     def save_product(self, prodtosave):
+        """
+        Get from the database the needed information for the
+        product selected by the user and insert it in the Favorites table
+        :param prodtosave: get the id of the product to save
+        """
         # Get the product and save it into a variable
         self.cursor.execute("SELECT * FROM Products WHERE Products.id = %s;" % prodtosave)
         information = self.cursor.fetchone()
@@ -155,5 +192,5 @@ class Request:
         # Save changes
         self.database.commit()
 
-    def update_database(self):
-        self.cursor.execute()
+    #def update_database(self):
+     #   self.cursor.execute()

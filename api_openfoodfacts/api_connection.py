@@ -17,4 +17,4 @@ class APIInformation:
         "json": '1',
     }
     PAGE_MIN = 1
-    PAGE_MAX = 25
+    PAGE_MAX = 20
