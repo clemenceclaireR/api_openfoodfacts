@@ -168,26 +168,28 @@ class Request:
         """
         # Get the product and save it into a variable
         self.cursor.execute("SELECT * FROM Products WHERE Products.id = %s " % prodtosave)
-        information = self.cursor.fetchone() # renvoie un tuple
+        information = self.cursor.fetchone()
+        # creation of a dict in order to avoid SQL Syntax errors when doubles quotes in the strings
+        prod_info = dict()
         sub_name = information[1]
-        prodtosave['sub_name'] = sub_name # création d'un dict
+        prod_info['sub_name'] = sub_name
         new_nutriscore = information[4]
-        prodtosave['new_nutriscore'] = new_nutriscore
+        prod_info['new_nutriscore'] = new_nutriscore
         new_link = information[5]
-        prodtosave['new_link'] = new_link
+        prod_info['new_link'] = new_link
         new_store = information[6]
-        prodtosave['new_store'] = new_store
+        prod_info['new_store'] = new_store
         source_product_name = StoredData.product_name
-        prodtosave['source_product_name'] = source_product_name
+        prod_info['source_product_name'] = source_product_name
         source_product_nutriscore = StoredData.nutriscore
-        prodtosave['source_product_nutriscore'] = source_product_nutriscore
+        prod_info['source_product_nutriscore'] = source_product_nutriscore
 
         # Insert the product into the table "Saved"
         self.cursor.execute("INSERT INTO Favorites \
                                 (name_source_product, nutriscore_source_product, name_alternative_product, \
                                 nutriscore_alternative_product, store_alternative_product, link_alternative_product) \
                                  VALUES (%(source_product_name)s, %(source_product_nutriscore)s, %(sub_name)s, "
-                            "%(new_nutriscore)s, %(new_store)s, %(new_link)s);", prodtosave)
+                            "%(new_nutriscore)s, %(new_store)s, %(new_link)s);", prod_info)
 
         # Save changes
         self.database.commit()
