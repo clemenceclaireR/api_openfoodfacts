@@ -1,10 +1,12 @@
 #! usr/bin/env python3
 # -*- Coding: UTF-8 -*-
 
-from PyQt5.QtWidgets import QMessageBox
-
 
 class StoredData:
+    """
+    This class contains data which have been parsed and
+    processed in order to be used in the interface
+    """
     list_categories = list()
     list_products = list()
     list_products_for_given_category = list()
@@ -23,6 +25,7 @@ class Request:
     This class contains the methods which will interact
     with the database in order to get and display informations
     """
+
     def __init__(self, cursor, database):
         self.cursor = cursor
         self.database = database
@@ -118,14 +121,6 @@ class Request:
 
         self.display_products(request)
 
-    #def select_category(self, table):
-     #   """
-      #  Select the category associated to the user input
-       # """
-        #name_table = list(table.keys())
-        #category = name_table[0]
-        #return category
-
     def find_products_for_a_given_category(self):
         """
         Ask the database for products information for a given category
@@ -172,25 +167,27 @@ class Request:
         :param prodtosave: get the id of the product to save
         """
         # Get the product and save it into a variable
-        self.cursor.execute("SELECT * FROM Products WHERE Products.id = %s;" % prodtosave)
-        information = self.cursor.fetchone()
+        self.cursor.execute("SELECT * FROM Products WHERE Products.id = %s " % prodtosave)
+        information = self.cursor.fetchone() # renvoie un tuple
         sub_name = information[1]
+        prodtosave['sub_name'] = sub_name # création d'un dict
         new_nutriscore = information[4]
+        prodtosave['new_nutriscore'] = new_nutriscore
         new_link = information[5]
+        prodtosave['new_link'] = new_link
         new_store = information[6]
+        prodtosave['new_store'] = new_store
         source_product_name = StoredData.product_name
+        prodtosave['source_product_name'] = source_product_name
         source_product_nutriscore = StoredData.nutriscore
+        prodtosave['source_product_nutriscore'] = source_product_nutriscore
 
         # Insert the product into the table "Saved"
         self.cursor.execute("INSERT INTO Favorites \
                                 (name_source_product, nutriscore_source_product, name_alternative_product, \
                                 nutriscore_alternative_product, store_alternative_product, link_alternative_product) \
-                                 VALUES ('%s', '%s', '%s', '%s', '%s', '%s');"  # quotes for str
-                            % (source_product_name, source_product_nutriscore, sub_name,
-                                    new_nutriscore, new_store, new_link))
+                                 VALUES (%(source_product_name)s, %(source_product_nutriscore)s, %(sub_name)s, "
+                            "%(new_nutriscore)s, %(new_store)s, %(new_link)s);", prodtosave)
 
         # Save changes
         self.database.commit()
-
-    #def update_database(self):
-     #   self.cursor.execute()

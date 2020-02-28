@@ -30,12 +30,12 @@ class Api:
             # Make the request via the API.
             products_request = requests.get(APIInformation.PRODUCTS_LINK,
                                             params=APIInformation.PARAMETERS)
-            products = products_request.json()  # ici bcp de data quand on regarde l'url
-            # sort needed infos
+            products = products_request.json()
+            # sort needed information
             for element in products['products']:
                 if not all(tag in element for tag in (
-                    "product_name", "brands", "nutrition_grade_fr", "url", "stores",
-                    "categories")):
+                        "product_name", "brands", "nutrition_grade_fr", "url", "stores",
+                        "categories")):
                     pass
                 else:
                     self.parsed_products.append(element)
@@ -108,10 +108,8 @@ class Api:
 
         for n in ids:
             for product in self.parsed_products:
-                if product['categories'] == self.id_name[n][1]: # name
-                    #print(product['categories'], self.id_name[n][1])
-                    product['categories'] = self.id_name[n][0]
-                    #print(product['categories'], self.id_name[n][0]) # id
+                if product['categories'] == self.id_name[n][1]:  # name
+                    product['categories'] = self.id_name[n][0]  # ID
 
         return self.parsed_products
 
