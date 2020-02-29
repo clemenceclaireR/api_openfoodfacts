@@ -1,5 +1,6 @@
 descriptif_api_openfoodfacts
 .idea
+*.pyc
 __pycache__/*.pyc
 api_openfoodfacts/__pycache__/*.pyc
 interface/*.pyc
