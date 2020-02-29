@@ -1,10 +1,10 @@
-CREATE USER ‘user’@’localhost’ IDENTIFIED BY ‘off2019’;
+CREATE USER 'user'@localhost IDENTIFIED BY 'off2019';
 
-CREATE DATABASE openfoodfacts CHARACTER SET ‘utf8’;
+CREATE DATABASE openfoodfacts CHARACTER SET 'utf8';
 
-GRANT ALL PRIVILEGES ON openfoodfacts.* TO ‘user’@’localhost’;
+GRANT ALL PRIVILEGES ON openfoodfacts.* TO 'user'@localhost;
 
-USE DATABASE openfoodfacts;
+USE openfoodfacts;
 
 CREATE TABLE Categories (
     id SMALLINT(6) unsigned NOT NULL AUTO_INCREMENT,

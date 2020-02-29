@@ -163,8 +163,6 @@ class Main(QtWidgets.QMainWindow):
             if err.errno == errorcode.ER_BAD_DB_ERROR:
                 self.get_data()
 
-    # program interface
-
     def main_menu(self, *kwargs):
         """
         Initialize and put associated data in the QWidgets objects
@@ -199,6 +197,7 @@ class Main(QtWidgets.QMainWindow):
         # refresh list when this function is called
         StoredData.list_products_for_given_category = []
         StoredData.user_category_choice = self.category_choice.text()
+
         # convert data to int in order to verify its value
         # if it's a text, no need to convert : pass
         try:
@@ -230,7 +229,7 @@ class Main(QtWidgets.QMainWindow):
             self.request_access.save_product(StoredData.product_to_register)
             self.msg.setText("Product saved")
             self.show_dialog()
-            # raffraichit
+            # refresh list when a new research is saved
             StoredData.list_saved_products = []
             self.request_access.show_saved_products()
             self.saved_product_field.setText(str("\n".join
@@ -246,7 +245,8 @@ class Main(QtWidgets.QMainWindow):
         """
         Get user's product choice to trade and display the alternatives
         """
-        StoredData.substitute = [] # raffraichit
+        # refresh list when this function is called
+        StoredData.substitute = []
         StoredData.user_product_choice = self.product_choice.text()
         try:
             self.request_access.find_healthier_substitute(StoredData.user_category_choice,
