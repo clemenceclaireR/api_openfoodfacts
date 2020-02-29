@@ -30,6 +30,11 @@ Windows and macOS :
 
 Download the MySQL installer on : https://dev.mysql.com/downloads/mysql/
 
+**Create the database**
+
+Use the file _script_database.sql_ : it will create the database, its tables, 
+encoding and user for you.
+
 **Python libraries**
 
 Go to the project folded and type in your terminal : _pip install -r requirements.txt_
@@ -37,7 +42,7 @@ Go to the project folded and type in your terminal : _pip install -r requirement
 
 #### How to use
 
-Start launch.py on a terminal. A window open and the program connect with your database, which will be
+Start launch.py on a terminal. A window opens and the program connects with your database, which will be
 filled with the API request automatically.
 You can see the categories and products available.
 Select a category number and the program display to you the product associated to this
