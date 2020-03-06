@@ -2,7 +2,7 @@
 # -*- Coding: UTF-8 -*-
 
 import requests
-from database.request_off import StoredData
+from database.request_off import ProgramStatus
 from .api_connection import APIInformation
 
 
@@ -68,7 +68,7 @@ class Api:
             categories.append(element['categories'])
 
         self.sorted_categories = sorted(set(categories))
-        StoredData.message_list.append("Categories sorted successfully")
+        ProgramStatus.message_list.append("Categories sorted successfully")
         return self.sorted_categories
 
     def insert_categories(self, database):
@@ -80,7 +80,7 @@ class Api:
             self.user_cursor.execute("INSERT IGNORE INTO Categories(name) VALUES ('%s')"
                                      % element)
         database.commit()
-        StoredData.message_list.append("Categories inserted successfully.")
+        ProgramStatus.message_list.append("Categories inserted successfully.")
 
     def get_categories_name_and_ids(self):
         """
@@ -126,5 +126,5 @@ class Api:
                 element['brands'], element['nutrition_grade_fr'],
                 element['url'], element['stores']))
 
-        StoredData.message_list.append("Products inserted successfully in the database.")
+        ProgramStatus.message_list.append("Products inserted successfully in the database.")
         database.commit()

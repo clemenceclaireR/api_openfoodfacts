@@ -1,7 +1,15 @@
-descriptif_api_openfoodfacts
 .idea
+
+# Caches
 *.pyc
 __pycache__/*.pyc
 api_openfoodfacts/__pycache__/*.pyc
 interface/*.pyc
 database/*.pyc
+
+# Virtual Environments
+venv/
+env/
+
+# Doc
+descriptif_api_openfoodfacts

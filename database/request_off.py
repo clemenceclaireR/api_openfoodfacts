@@ -2,22 +2,27 @@
 # -*- Coding: UTF-8 -*-
 
 
-class StoredData:
-    """
-    This class contains data which have been parsed and
-    processed in order to be used in the interface
-    """
+class ProgramStatus:
+    message_list = list()
+
+
+class UserInput:
+    product_to_register = int
+    user_category_choice = int
+    user_product_choice = int
+
+
+class ListProducts:
     list_categories = list()
     list_products = list()
     list_products_for_given_category = list()
     list_saved_products = list()
-    user_category_choice = int
-    user_product_choice = int
     substitute = list()
-    product_to_register = int
+
+
+class SubstituteManager:
     nutriscore = ""
     product_name = ""
-    message_list = list()
 
 
 class Request:
@@ -37,7 +42,7 @@ class Request:
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
             count = 0
-            StoredData.list_categories.append(str(result))
+            ListProducts.list_categories.append(str(result))
             count += 1
 
     def display_products(self, request):
@@ -47,7 +52,7 @@ class Request:
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
             count = 0
-            StoredData.list_products.append(str(result))
+            ListProducts.list_products.append(str(result))
             count += 1
 
     def display_products_for_given_categories(self, request):
@@ -57,7 +62,7 @@ class Request:
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
             count = 0
-            StoredData.list_products_for_given_category.append(str(result))
+            ListProducts.list_products_for_given_category.append(str(result))
             count += 1
 
     def display_substitute(self, request, category, nutriscore):
@@ -67,7 +72,7 @@ class Request:
         self.cursor.execute(request, (category, nutriscore))
         for result in self.cursor.fetchall():
             count = 0
-            StoredData.substitute.append(str(result))
+            ListProducts.substitute.append(str(result))
             count += 1
 
     def display_saved_products(self, request):
@@ -77,7 +82,7 @@ class Request:
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
             count = 0
-            StoredData.list_saved_products.append(str(result))
+            ListProducts.list_saved_products.append(str(result))
             count += 1
 
     def show_saved_products(self):
@@ -131,11 +136,12 @@ class Request:
                    INNER JOIN Categories \
                    ON OFFProducts.id_category = Categories.id \
                    WHERE Categories.id = %s \
-                   ORDER BY OFFProducts.id;" % StoredData.user_category_choice)
+                   ORDER BY OFFProducts.id;" % UserInput.user_category_choice)
 
         self.display_products_for_given_categories(request)
 
-    def find_healthier_substitute(self, category, product):
+    #def find_healthier_substitute(self, category, product):
+    def find_healthier_substitute(self,  product):
         """
         Ask the database for the products from the same
         category that the user selected, but with a higher nutriscore
@@ -146,9 +152,10 @@ class Request:
         # save product into a variable
         self.cursor.execute("SELECT * FROM Products \
                                 WHERE Products.id = " + product)
-        StoredData.information = self.cursor.fetchone()
-        StoredData.nutriscore = str(StoredData.information[4])
-        StoredData.product_name = str(StoredData.information[1])
+        SubstituteManager.information = self.cursor.fetchone()
+        SubstituteManager.nutriscore = str(SubstituteManager.information[4])
+        SubstituteManager.product_name = str(SubstituteManager.information[1])
+        SubstituteManager.associated_category = str(SubstituteManager.information[2])
 
         request = ("SELECT Products.id, Products.name, Products.nutriscore, \
                    Products.store, Products.brands, Products.link \
@@ -158,7 +165,7 @@ class Request:
                    AND Products.nutriscore < %s \
                    ORDER BY Products.nutriscore")
 
-        self.display_substitute(request, category, StoredData.nutriscore)
+        self.display_substitute(request, SubstituteManager.associated_category, SubstituteManager.nutriscore)
 
     def save_product(self, prodtosave):
         """
@@ -173,8 +180,8 @@ class Request:
         new_nutriscore = information[4]
         new_link = information[5]
         new_store = information[6]
-        source_product_name = StoredData.product_name
-        source_product_nutriscore = StoredData.nutriscore
+        source_product_name = SubstituteManager.product_name
+        source_product_nutriscore = SubstituteManager.nutriscore
 
         save_request = ("INSERT INTO Favorites \
                                         (name_source_product, nutriscore_source_product, name_alternative_product, \
