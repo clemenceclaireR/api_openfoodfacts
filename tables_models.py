@@ -38,7 +38,7 @@ class Products(BaseModel):
 
 
 class Favorites(BaseModel):
-    link_alternative_product = CharField(null=True)
+    #link_alternative_product = CharField(null=True)
     name_alternative_product = ForeignKeyField(column_name='name_alternative_product',
                                                field='name', model=Products, null=True)
     name_source_product = ForeignKeyField(backref='products_name_source_product_set',
@@ -46,25 +46,27 @@ class Favorites(BaseModel):
                                           model=Products, null=True)
     nutriscore_alternative_product = CharField(null=True)
     nutriscore_source_product = CharField(null=True)
-    store_alternative_product = CharField(null=True)
+    #store_alternative_product = CharField(null=True)
 
     class Meta:
         table_name = 'favorites'
 
 
 # connection to the database
-database.connect()
+
+database.connect() # ok
+
 
 
 products_query = Products.select(Products.id, Products.name)
 list_products_query = list(products_query)
-categories_query = Categories.select()
-favorites_query = Favorites.select()
+#categories_query = Categories.select()
+#favorites_query = Favorites.select()
 
 
-l_products = [[products.id, products.name] for products in list_products_query]
+#l_products = [[products.id, products.name] for products in list_products_query]
 
-id_products = [products.id for products in products_query]
-print(l_products)
+#id_products = [products.id for products in products_query]
+#print(l_products)
 
 

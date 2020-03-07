@@ -1,20 +1,18 @@
 #! usr/bin/env python3
 # -*- Coding: UTF-8 -*-
 
-import mysql.connector
-
+import mysql.connector as mariadb
+from mysql.connector import Error
 from database.db_connection import DatabaseInformation
 from api_openfoodfacts import api_off
-from mysql.connector import errorcode
 from PyQt5 import QtWidgets
 import sys
 from PyQt5.QtWidgets import QMessageBox
 from database.request_off import ProgramStatus, ListProducts, SubstituteManager, UserInput
-import mysql.connector
 from interface.mainwindow import Ui_MainWindow
 from database import request_off, database
-from mysql.connector import Error
-from tables_models import l_products
+
+#from tables_models import l_products
 
 
 class Main(QtWidgets.QMainWindow):
@@ -26,8 +24,9 @@ class Main(QtWidgets.QMainWindow):
         self.msg = QMessageBox()
 
         # connection to mysql database
-        self.database = mysql.connector.connect(user=DatabaseInformation.USER, password=DatabaseInformation.PASSWORD,
-                                                host=DatabaseInformation.HOST, buffered=True, use_unicode=True)
+        self.database = mariadb.connect(user=DatabaseInformation.USER, password=DatabaseInformation.PASSWORD,
+                                        host=DatabaseInformation.HOST, database=DatabaseInformation.DATABASE,
+                                        buffered=True, use_unicode=True, use_pure=True)
         self.cursor = self.database.cursor()
 
         self.api_access = api_off.Api(self.cursor)
@@ -156,14 +155,16 @@ class Main(QtWidgets.QMainWindow):
             self.request_access.show_categories(DatabaseInformation.TABLES)
             self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
             self.request_access.show_products(DatabaseInformation.TABLES)
-            #self.list_prod.setText(str("\n".join(ListProducts.list_products)))
-            self.list_prod.setText(str(l_products))
+            self.list_prod.setText(str("\n".join(ListProducts.list_products)))
+            #self.list_prod.setText(str(l_products))
             self.request_access.show_saved_products()
             self.saved_product_field.setText(str("\n".join(ListProducts.list_saved_products)))
+        except mariadb.Error:
+            pass
 
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_BAD_DB_ERROR:
-                self.get_data()
+        #except mysql.connector.Error as err:
+         #   if err.errno == Error.ER_BAD_DB_ERROR:
+          #      self.get_data()
 
     def main_menu(self, *kwargs):
         """
@@ -179,7 +180,8 @@ class Main(QtWidgets.QMainWindow):
         self.list_cat = self.ui.textBrowser_2
         self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
         self.list_prod = self.ui.textBrowser_3
-        self.list_prod.setText(str(l_products))
+        #self.list_prod.setText(str(l_products))
+        self.list_prod.setText(str("\n".join(ListProducts.list_products)))
         self.send_category = self.ui.pushButton_3
         self.send_category.clicked.connect(self.request_show_products_for_given_cat)
         self.send_product = self.ui.pushButton_6
@@ -218,7 +220,7 @@ class Main(QtWidgets.QMainWindow):
             self.request_access.find_products_for_a_given_category()
             self.list_prod_cat = self.ui.textBrowser_4
             self.list_prod_cat.setText(str("\n".join(ListProducts.list_products_for_given_category)))
-        except mysql.connector.Error as error:
+        except mariadb.Error as error:
             self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
             self.show_dialog()
 
@@ -238,7 +240,7 @@ class Main(QtWidgets.QMainWindow):
         except TypeError:
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()
-        except mysql.connector.Error as error:
+        except mariadb.Error as error:
             self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
             self.show_dialog()
 
@@ -246,7 +248,7 @@ class Main(QtWidgets.QMainWindow):
         """
         Check if there is a source product when the user wants to save a product
         """
-        if SubstituteManager.product_name or SubstituteManager.nutriscore == "":
+        if SubstituteManager.product_name == "":
             self.msg.setText(str("The product you just saved has no source product."))
             self.show_dialog()
         else:
@@ -267,7 +269,7 @@ class Main(QtWidgets.QMainWindow):
         except TypeError:
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()
-        except mysql.connector.Error as error:
+        except mariadb.Error as error:
             self.msg.setText("Please enter a number. \nError : {}".format(error))
             self.show_dialog()
 

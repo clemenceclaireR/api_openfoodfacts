@@ -90,7 +90,10 @@ class Request:
         Ask the database for all the entries from the Favorite table
         and display it
         """
-        request = "SELECT * FROM Favorites"
+        request = "SELECT Favorites.id, Favorites.name_source_product, Favorites.nutriscore_source_product, \
+                   Favorites.name_alternative_product, Favorites.nutriscore_alternative_product, \
+                   Products.link, Products.store FROM Favorites LEFT JOIN Products ON  \
+                   Favorites.id = Products.id"
         self.display_saved_products(request)
 
     def show_categories(self, table):
@@ -178,8 +181,8 @@ class Request:
         information = self.cursor.fetchone()
         sub_name = information[1]
         new_nutriscore = information[4]
-        new_link = information[5]
-        new_store = information[6]
+        #new_link = information[5]
+        #new_store = information[6]
         source_product_name = SubstituteManager.product_name
         source_product_nutriscore = SubstituteManager.nutriscore
 
@@ -189,7 +192,13 @@ class Request:
                                         link_alternative_product) \
                                         VALUES (%s, %s, %s, %s, %s, %s);")
 
-        self.cursor.execute(save_request, (source_product_name, source_product_nutriscore, sub_name,
-                                           new_nutriscore, new_store, new_link))
+        save_request2 = ("INSERT INTO Favorites \
+                                        (name_source_product, nutriscore_source_product, name_alternative_product, \
+                                        nutriscore_alternative_product) \
+                                        VALUES (%s, %s, %s, %s);")
+
+        self.cursor.execute(save_request2, (source_product_name, source_product_nutriscore, sub_name, new_nutriscore))
+        #self.cursor.execute(save_request, (source_product_name, source_product_nutriscore, sub_name,
+         #                                  new_nutriscore, new_store, new_link))
         # Save changes
         self.database.commit()
