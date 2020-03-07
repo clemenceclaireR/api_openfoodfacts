@@ -11,22 +11,25 @@ from PyQt5.QtWidgets import QMessageBox
 from database.request_off import ProgramStatus, ListProducts, SubstituteManager, UserInput
 from interface.mainwindow import Ui_MainWindow
 from database import request_off, database
-
-#from tables_models import l_products
+from database.models import Store
 
 
 class Main(QtWidgets.QMainWindow):
     """
     Main program which will interacts with the API and the database
     """
+
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
         self.msg = QMessageBox()
 
         # connection to mysql database
+        # use_pure parameter is necessary to connection
+        # in order to use C implementation that uses  MySQL C client library
         self.database = mariadb.connect(user=DatabaseInformation.USER, password=DatabaseInformation.PASSWORD,
                                         host=DatabaseInformation.HOST, database=DatabaseInformation.DATABASE,
                                         buffered=True, use_unicode=True, use_pure=True)
+
         self.cursor = self.database.cursor()
 
         self.api_access = api_off.Api(self.cursor)
@@ -150,21 +153,17 @@ class Main(QtWidgets.QMainWindow):
             ProgramStatus.message_list.append("Using database")
             self.display_message(ProgramStatus.message_list)
 
-            #self.get_data()
-
+            # self.get_data()
             self.request_access.show_categories(DatabaseInformation.TABLES)
-            self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
+            self.list_cat.setText(str("\n".join(map(str, Store.l_categories))))
             self.request_access.show_products(DatabaseInformation.TABLES)
-            self.list_prod.setText(str("\n".join(ListProducts.list_products)))
-            #self.list_prod.setText(str(l_products))
+            self.list_prod.setText(str("\n".join(map(str, Store.l_products))))
             self.request_access.show_saved_products()
-            self.saved_product_field.setText(str("\n".join(ListProducts.list_saved_products)))
-        except mariadb.Error:
-            pass
+            self.saved_product_field.setText(str("\n".join(map(str, Store.l_favorites))))
 
-        #except mysql.connector.Error as err:
-         #   if err.errno == Error.ER_BAD_DB_ERROR:
-          #      self.get_data()
+        except mariadb.Error as err:
+            if err.errno:
+                self.get_data()
 
     def main_menu(self, *kwargs):
         """
@@ -175,13 +174,13 @@ class Main(QtWidgets.QMainWindow):
         self.status_bar = self.ui.textBrowser
         self.status_bar.setText(str("\n".join(ProgramStatus.message_list)))
         self.saved_product_field = self.ui.textBrowser_6
-        self.saved_product_field.setText(str("\n".join(ListProducts.list_saved_products)))
+        #self.saved_product_field.setText(str("\n".join(ListProducts.list_saved_products)))
+        self.saved_product_field.setText(str("\n".join(map(str, Store.l_favorites))))
         self.quit_button = self.ui.pushButton_5
         self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
+        self.list_cat.setText(str("\n".join(map(str, Store.l_categories))))
         self.list_prod = self.ui.textBrowser_3
-        #self.list_prod.setText(str(l_products))
-        self.list_prod.setText(str("\n".join(ListProducts.list_products)))
+        self.list_prod.setText(str("\n".join(map(str, Store.l_products))))
         self.send_category = self.ui.pushButton_3
         self.send_category.clicked.connect(self.request_show_products_for_given_cat)
         self.send_product = self.ui.pushButton_6
@@ -206,22 +205,24 @@ class Main(QtWidgets.QMainWindow):
         # if it's a text, no need to convert : pass
         try:
             UserInput.int_user_category_choice = int(self.category_choice.text())
-        except ValueError:
-            pass
 
-        self.cursor.execute('SELECT max(id) FROM Categories')
-        max_id = self.cursor.fetchone()[0]
+            self.cursor.execute('SELECT max(id) FROM Categories')
+            max_id = self.cursor.fetchone()[0]
 
         # if user input bigger than the max id, alert
-        if UserInput.int_user_category_choice > max_id:
-            self.msg.setText(str("This number is too big."))
-            self.show_dialog()
-        try:
-            self.request_access.find_products_for_a_given_category()
-            self.list_prod_cat = self.ui.textBrowser_4
-            self.list_prod_cat.setText(str("\n".join(ListProducts.list_products_for_given_category)))
-        except mariadb.Error as error:
-            self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
+            if UserInput.int_user_category_choice > max_id:
+                self.msg.setText(str("This number is too big."))
+                self.show_dialog()
+            try:
+                self.request_access.find_products_for_a_given_category()
+                self.list_prod_cat = self.ui.textBrowser_4
+                self.list_prod_cat.setText(str("\n".join(ListProducts.list_products_for_given_category)))
+            except mariadb.Error as error:
+                self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
+                self.show_dialog()
+
+        except ValueError:
+            self.msg.setText("Please enter a number.")
             self.show_dialog()
 
     def get_product_to_save(self):
@@ -280,4 +281,3 @@ if __name__ == "__main__":
     widget.show()
     widget.main_loop()
     sys.exit(app.exec_())
-

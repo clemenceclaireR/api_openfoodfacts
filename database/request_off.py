@@ -90,10 +90,10 @@ class Request:
         Ask the database for all the entries from the Favorite table
         and display it
         """
-        request = "SELECT Favorites.id, Favorites.name_source_product, Favorites.nutriscore_source_product, \
-                   Favorites.name_alternative_product, Favorites.nutriscore_alternative_product, \
+        request = "SELECT Favorites.id, Favorites.name_alternative_product, Favorites.nutriscore_alternative_product, \
+                   Favorites.name_source_product, Favorites.nutriscore_source_product, \
                    Products.link, Products.store FROM Favorites LEFT JOIN Products ON  \
-                   Favorites.id = Products.id"
+                   Favorites.name_alternative_product = Products.name"
         self.display_saved_products(request)
 
     def show_categories(self, table):
