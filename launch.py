@@ -154,11 +154,11 @@ class Main(QtWidgets.QMainWindow):
             self.display_message(ProgramStatus.message_list)
 
             # self.get_data()
-            self.request_access.show_categories(DatabaseInformation.TABLES)
+           # self.request_access.show_categories(DatabaseInformation.TABLES)
             self.list_cat.setText(str("\n".join(map(str, Store.l_categories))))
-            self.request_access.show_products(DatabaseInformation.TABLES)
+            #self.request_access.show_products(DatabaseInformation.TABLES)
             self.list_prod.setText(str("\n".join(map(str, Store.l_products))))
-            self.request_access.show_saved_products()
+            #self.request_access.show_saved_products()
             self.saved_product_field.setText(str("\n".join(map(str, Store.l_favorites))))
 
         except mariadb.Error as err:

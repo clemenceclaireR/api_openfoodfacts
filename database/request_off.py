@@ -13,10 +13,10 @@ class UserInput:
 
 
 class ListProducts:
-    list_categories = list()
-    list_products = list()
+    #list_categories = list()
+    #list_products = list()
     list_products_for_given_category = list()
-    list_saved_products = list()
+    #list_saved_products = list()
     substitute = list()
 
 
@@ -35,25 +35,25 @@ class Request:
         self.cursor = cursor
         self.database = database
 
-    def display_categories(self, request):
-        """
-        display the list of categories from the database
-        """
-        self.cursor.execute(request)
-        for result in self.cursor.fetchall():
-            count = 0
-            ListProducts.list_categories.append(str(result))
-            count += 1
+    #def display_categories(self, request):
+    #    """
+    #    display the list of categories from the database
+    #    """
+    #    self.cursor.execute(request)
+    #    for result in self.cursor.fetchall():
+    #        count = 0
+    #        ListProducts.list_categories.append(str(result))
+    #        count += 1
 
-    def display_products(self, request):
-        """
-        display the list of products from the database
-        """
-        self.cursor.execute(request)
-        for result in self.cursor.fetchall():
-            count = 0
-            ListProducts.list_products.append(str(result))
-            count += 1
+    #def display_products(self, request):
+    #    """
+    #    display the list of products from the database
+    #    """
+    #    self.cursor.execute(request)
+    #    for result in self.cursor.fetchall():
+    #        count = 0
+    #        ListProducts.list_products.append(str(result))
+    #        count += 1
 
     def display_products_for_given_categories(self, request):
         """
@@ -75,59 +75,59 @@ class Request:
             ListProducts.substitute.append(str(result))
             count += 1
 
-    def display_saved_products(self, request):
-        """
-        display previously saved products
-        """
-        self.cursor.execute(request)
-        for result in self.cursor.fetchall():
-            count = 0
-            ListProducts.list_saved_products.append(str(result))
-            count += 1
+    #def display_saved_products(self, request):
+    #    """
+    #    display previously saved products
+    #    """
+    #    self.cursor.execute(request)
+    #    for result in self.cursor.fetchall():
+    #        count = 0
+    #        ListProducts.list_saved_products.append(str(result))
+    #        count += 1
 
-    def show_saved_products(self):
-        """
-        Ask the database for all the entries from the Favorite table
-        and display it
-        """
-        request = "SELECT Favorites.id, Favorites.name_alternative_product, Favorites.nutriscore_alternative_product, \
-                   Favorites.name_source_product, Favorites.nutriscore_source_product, \
-                   Products.link, Products.store FROM Favorites LEFT JOIN Products ON  \
-                   Favorites.name_alternative_product = Products.name"
-        self.display_saved_products(request)
+    #def show_saved_products(self):
+    #    """
+    #    Ask the database for all the entries from the Favorite table
+    #    and display it
+    #    """
+    #    request = "SELECT Favorites.id, Favorites.name_alternative_product, Favorites.nutriscore_alternative_product, \
+    #               Favorites.name_source_product, Favorites.nutriscore_source_product, \
+    #               Products.link, Products.store FROM Favorites LEFT JOIN Products ON  \
+    #               Favorites.name_alternative_product = Products.name"
+    #    self.display_saved_products(request)
 
-    def show_categories(self, table):
-        """
-        Get the keys from a given table in order to get
-        its name and ask the database for its entries,
-        then display it
-        """
-        name_table = list(table.keys())
-        category = name_table[0]
+    #def show_categories(self, table):
+    #    """
+    #    Get the keys from a given table in order to get
+    #    its name and ask the database for its entries,
+    #    then display it
+    #    """
+    #    name_table = list(table.keys())
+    #    category = name_table[0]
+    #
+    #    # counting items in the table Categories
+    #    self.cursor.execute("SELECT COUNT(*) FROM %s;" % category)
+    #
+    #    request = ("SELECT * FROM %s ORDER BY id;" %
+    #               category)
+    #
+    #    self.display_categories(request)
 
-        # counting items in the table Categories
-        self.cursor.execute("SELECT COUNT(*) FROM %s;" % category)
-
-        request = ("SELECT * FROM %s ORDER BY id;" %
-                   category)
-
-        self.display_categories(request)
-
-    def show_products(self, table):
-        """
-        Get the keys from a given tame in order to get
-        its name and ask the database for its entries,
-        then display it
-        """
-        name_table = list(table.keys())
-        category = name_table[1]
-
-        self.cursor.execute("SELECT COUNT(*) FROM %s;" % category)
-
-        request = ("SELECT id, name, brands FROM %s ORDER BY id;"
-                   % category)
-
-        self.display_products(request)
+    #def show_products(self, table):
+    #    """
+    #    Get the keys from a given tame in order to get
+    #    its name and ask the database for its entries,
+    #    then display it
+    #    """
+    #    name_table = list(table.keys())
+    #    category = name_table[1]
+    #
+    #    self.cursor.execute("SELECT COUNT(*) FROM %s;" % category)
+    #
+    #    request = ("SELECT id, name, brands FROM %s ORDER BY id;"
+    #               % category)
+    #
+    #    self.display_products(request)
 
     def find_products_for_a_given_category(self):
         """
@@ -143,7 +143,6 @@ class Request:
 
         self.display_products_for_given_categories(request)
 
-    #def find_healthier_substitute(self, category, product):
     def find_healthier_substitute(self,  product):
         """
         Ask the database for the products from the same
