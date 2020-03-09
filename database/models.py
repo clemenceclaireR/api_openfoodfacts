@@ -5,6 +5,7 @@ import operator
 import peewee
 from peewee import *
 from database.db_connection import DatabaseInformation
+from .request_off import UserInput
 
 database = MySQLDatabase('openfoodfacts', **{'charset': 'utf8', 'sql_mode': 'PIPES_AS_CONCAT',
                                              'use_unicode': True, 'user': DatabaseInformation.USER,
@@ -71,6 +72,9 @@ favorites_query = Favorites.select(Favorites.id, Favorites.name_alternative_prod
 
 list_favorites_query = list(favorites_query)
 
+products_by_id_query = Products.select().where(Products.id == UserInput.user_product_choice)
+list_products_by_id_query = list(products_by_id_query)
+
 
 class Store:
     l_products = [[products.id, products.name] for products in list_products_query]
@@ -86,4 +90,9 @@ class Store:
     l_favorites.sort(key=operator.itemgetter(0))
 
 
-print(list_favorites_query)
+
+
+
+
+
+

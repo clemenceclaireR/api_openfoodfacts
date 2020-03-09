@@ -55,15 +55,15 @@ class Request:
     #        ListProducts.list_products.append(str(result))
     #        count += 1
 
-    def display_products_for_given_categories(self, request):
-        """
-        display the products associated to a given category
-        """
-        self.cursor.execute(request)
-        for result in self.cursor.fetchall():
-            count = 0
-            ListProducts.list_products_for_given_category.append(str(result))
-            count += 1
+    #def display_products_for_given_categories(self, request):
+    #    """
+    #    display the products associated to a given category
+    #    """
+    #    self.cursor.execute(request)
+    #    for result in self.cursor.fetchall():
+    #        count = 0
+    #        ListProducts.list_products_for_given_category.append(str(result))
+    #        count += 1
 
     def display_substitute(self, request, category, nutriscore):
         """
@@ -129,19 +129,19 @@ class Request:
     #
     #    self.display_products(request)
 
-    def find_products_for_a_given_category(self):
-        """
-        Ask the database for products information for a given category
-        ans display it
-        """
-        request = ("SELECT OFFProducts.id, OFFProducts.name, brands, nutriscore \
-                   FROM Products as OFFProducts \
-                   INNER JOIN Categories \
-                   ON OFFProducts.id_category = Categories.id \
-                   WHERE Categories.id = %s \
-                   ORDER BY OFFProducts.id;" % UserInput.user_category_choice)
-
-        self.display_products_for_given_categories(request)
+    #def find_products_for_a_given_category(self):
+    #    """
+    #    Ask the database for products information for a given category
+    #    ans display it
+    #    """
+    #    request = ("SELECT OFFProducts.id, OFFProducts.name, brands, nutriscore \
+    #               FROM Products as OFFProducts \
+    #               INNER JOIN Categories \
+    #               ON OFFProducts.id_category = Categories.id \
+    #               WHERE Categories.id = %s \
+    #               ORDER BY OFFProducts.id;" % UserInput.user_category_choice)
+    #
+    #    self.display_products_for_given_categories(request)
 
     def find_healthier_substitute(self,  product):
         """
