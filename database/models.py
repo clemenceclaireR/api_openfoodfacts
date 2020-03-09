@@ -72,9 +72,14 @@ favorites_query = Favorites.select(Favorites.id, Favorites.name_alternative_prod
 
 list_favorites_query = list(favorites_query)
 
-products_by_id_query = Products.select().where(Products.id == UserInput.user_product_choice)
+products_by_id_query = Products.select().where(Products.id == str(UserInput.user_product_choice))
 list_products_by_id_query = list(products_by_id_query)
 
+
+# save_request2 = ("INSERT INTO Favorites \
+#                                         (name_source_product, nutriscore_source_product, name_alternative_product, \
+#                                         nutriscore_alternative_product) \
+#                                         VALUES (%s, %s, %s, %s);")
 
 class Store:
     l_products = [[products.id, products.name] for products in list_products_query]
@@ -88,6 +93,10 @@ class Store:
          favorites.name_source_product, favorites.nutriscore_source_product,
          favorites.products.link, favorites.products.store] for favorites in list_favorites_query]
     l_favorites.sort(key=operator.itemgetter(0))
+
+    l_products_per_cat = []
+    l_substitute = []
+    l_prodtosave = []
 
 
 

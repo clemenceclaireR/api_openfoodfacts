@@ -12,12 +12,12 @@ class UserInput:
     user_product_choice = int
 
 
-class ListProducts:
+#class ListProducts:
     #list_categories = list()
     #list_products = list()
-    list_products_for_given_category = list()
+    #list_products_for_given_category = list()
     #list_saved_products = list()
-    substitute = list()
+    #substitute = list()
 
 
 class SubstituteManager:
@@ -65,15 +65,15 @@ class Request:
     #        ListProducts.list_products_for_given_category.append(str(result))
     #        count += 1
 
-    def display_substitute(self, request, category, nutriscore):
-        """
-        display substitutes for a given product
-        """
-        self.cursor.execute(request, (category, nutriscore))
-        for result in self.cursor.fetchall():
-            count = 0
-            ListProducts.substitute.append(str(result))
-            count += 1
+    #def display_substitute(self, request, category, nutriscore):
+    #    """
+    #    display substitutes for a given product
+    #    """
+    #    self.cursor.execute(request, (category, nutriscore))
+    #    for result in self.cursor.fetchall():
+    #        count = 0
+    #        ListProducts.substitute.append(str(result))
+    #        count += 1
 
     #def display_saved_products(self, request):
     #    """
@@ -143,31 +143,31 @@ class Request:
     #
     #    self.display_products_for_given_categories(request)
 
-    def find_healthier_substitute(self,  product):
-        """
-        Ask the database for the products from the same
-        category that the user selected, but with a higher nutriscore
-        then display it
-        :param category: category associated by the product selected by the user
-        :param product:  product to substitute selected by the user
-        """
-        # save product into a variable
-        self.cursor.execute("SELECT * FROM Products \
-                                WHERE Products.id = " + product)
-        SubstituteManager.information = self.cursor.fetchone()
-        SubstituteManager.nutriscore = str(SubstituteManager.information[4])
-        SubstituteManager.product_name = str(SubstituteManager.information[1])
-        SubstituteManager.associated_category = str(SubstituteManager.information[2])
+    #def find_healthier_substitute(self,  product):
+    #    """
+    #    Ask the database for the products from the same
+    #    category that the user selected, but with a higher nutriscore
+    #    then display it
+    #    :param category: category associated by the product selected by the user
+    #    :param product:  product to substitute selected by the user
+    #    """
+    #    # save product into a variable
+    #    self.cursor.execute("SELECT * FROM Products \
+    #                            WHERE Products.id = " + product)
+    #    SubstituteManager.information = self.cursor.fetchone()
+    #    SubstituteManager.nutriscore = str(SubstituteManager.information[4])
+    #    SubstituteManager.product_name = str(SubstituteManager.information[1])
+    #    SubstituteManager.associated_category = str(SubstituteManager.information[2])
 
-        request = ("SELECT Products.id, Products.name, Products.nutriscore, \
-                   Products.store, Products.brands, Products.link \
-                   FROM Products INNER JOIN Categories \
-                   ON Products.id_category = Categories.id \
-                   WHERE Categories.id = %s \
-                   AND Products.nutriscore < %s \
-                   ORDER BY Products.nutriscore")
-
-        self.display_substitute(request, SubstituteManager.associated_category, SubstituteManager.nutriscore)
+    #    request = ("SELECT Products.id, Products.name, Products.nutriscore, \
+    #               Products.store, Products.brands, Products.link \
+    #               FROM Products INNER JOIN Categories \
+    #               ON Products.id_category = Categories.id \
+    #               WHERE Categories.id = %s \
+    #               AND Products.nutriscore < %s \
+    #               ORDER BY Products.nutriscore")
+    #
+    #    self.display_substitute(request, SubstituteManager.associated_category, SubstituteManager.nutriscore)
 
     def save_product(self, prodtosave):
         """
