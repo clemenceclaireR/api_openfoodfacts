@@ -14,14 +14,14 @@ from database import request_off, database
 from database.models import Store
 import operator
 from peewee import *
-from database.models import Categories, Products
+from database.models import Categories, Products, Favorites
 
 
 def find_products_per_category():
     products_per_category_query = \
         Products.select(Products.id, Products.name, Products.brands, Products.nutriscore) \
-        .join(Categories, on=(Products.id_category == Categories.id)).where(
-         Categories.id == str(UserInput.user_category_choice)).order_by(Products.id)
+            .join(Categories, on=(Products.id_category == Categories.id)).where(
+            Categories.id == str(UserInput.user_category_choice)).order_by(Products.id)
 
     list_products_per_category_query = list(products_per_category_query)
 
@@ -51,15 +51,27 @@ def find_healthier_substitute():
 
 
 def save_product():
-    substitute_product_name = Products.select(Products.name).where(Products.id == str(UserInput.product_to_register))
-    substitute_product_nutriscore = Products.select(Products.nutriscore)\
-                                                            .where(Products.id == str(UserInput.product_to_register))
-    substitute_product_link = Products.select(Products.link).where(Products.id == str(UserInput.product_to_register))
-    substitute_product_store = Products.select(Products.store).where(Products.id == str(UserInput.product_to_register))
-    # source prod name (SubstituteManager.product_name)
-    # source prod nutriscore (SubstituteManager.nutriscore)
+    substitute_product_name = Products.select(Products.name).where(Products.id == UserInput.product_to_register)
+    substitute_product_nutriscore = Products.select(Products.nutriscore) \
+        .where(Products.id == UserInput.product_to_register)
+    substitute_product_link = Products.select(Products.link).where(Products.id == UserInput.product_to_register)
+    substitute_product_store = Products.select(Products.store).where(Products.id == UserInput.product_to_register)
+    source_prod_name = SubstituteManager.product_name
+    source_prod_nutriscore = SubstituteManager.nutriscore
+    # print(substitute_product_name) # SELECT `t1`.`name` FROM `Products` AS `t1` WHERE (`t1`.`id` = 5)
+    # print(str(substitute_product_name)) # SELECT `t1`.`name` FROM `Products` AS `t1` WHERE (`t1`.`id` = 5)
 
-    # requete insertion via ORM
+    # PLANTE ICI
+    save_query = Favorites.insert(
+        name_alternative_product=str(substitute_product_name), # convert
+        nutriscore_alternative_product=str(substitute_product_nutriscore), # convert
+        name_source_product=str(source_prod_name),
+        nutriscore_source_product=str(source_prod_nutriscore)).execute()
+
+    list_save_query = list(save_query)
+    print(list_save_query)
+    # save_query.execute()
+
 
 def format_list(list):
     """
@@ -201,7 +213,8 @@ class Main(QtWidgets.QMainWindow):
             ProgramStatus.message_list.append("Using database")
             self.display_message(ProgramStatus.message_list)
 
-            # self.get_data()
+            # self.get_data() # lorsqu'appelée la première fois, ListView Categories et Products vides
+
             self.list_cat.setText(str("\n".join(map(str, Store.l_categories))))
             self.list_prod.setText(str("\n".join(map(str, Store.l_products))))
             self.saved_product_field.setText(str("\n".join(map(str, Store.l_favorites))))
@@ -242,7 +255,7 @@ class Main(QtWidgets.QMainWindow):
         Get user's category input and return the associated products
         """
         # refresh list when this function is called
-        #ListProducts.list_products_for_given_category = []  # à modifier
+        # ListProducts.list_products_for_given_category = []  # à modifier
         Store.l_products_per_cat = []
         UserInput.user_category_choice = self.category_choice.text()
 
@@ -283,10 +296,11 @@ class Main(QtWidgets.QMainWindow):
         """
         UserInput.product_to_register = self.saved_product_choice.text()
         try:
-            self.request_access.save_product(UserInput.product_to_register)
+            save_product()
+            # self.request_access.save_product(UserInput.product_to_register)
             self.check_presence_source_product()
             # refresh list when a new research is saved
-            #ListProducts.list_saved_products = []
+            # ListProducts.list_saved_products = []
             Store.l_favorites = []
             # self.request_access.show_saved_products()
             self.saved_product_field.setText(str("\n".join(map(str, Store.l_favorites))))
@@ -315,14 +329,14 @@ class Main(QtWidgets.QMainWindow):
         Get user's product choice to trade and display the alternatives
         """
         # refresh list when this function is called
-        #ListProducts.substitute = []
+        # ListProducts.substitute = []
         Store.l_substitute = []
         UserInput.user_product_choice = self.product_choice.text()
         try:
-            #self.request_access.find_healthier_substitute(UserInput.user_product_choice)
+            # self.request_access.find_healthier_substitute(UserInput.user_product_choice)
             find_healthier_substitute()
             self.substitute = self.ui.textBrowser_5
-            #self.substitute.setText(str("\n".join(ListProducts.substitute)))
+            # self.substitute.setText(str("\n".join(ListProducts.substitute)))
             self.substitute.setText(str("\n".join(map(str, Store.l_substitute))))
         except TypeError:
             self.msg.setText("Please enter an attributed number.")

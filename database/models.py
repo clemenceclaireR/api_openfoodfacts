@@ -7,6 +7,7 @@ from peewee import *
 from database.db_connection import DatabaseInformation
 from .request_off import UserInput
 
+
 database = MySQLDatabase('openfoodfacts', **{'charset': 'utf8', 'sql_mode': 'PIPES_AS_CONCAT',
                                              'use_unicode': True, 'user': DatabaseInformation.USER,
                                              'passwd': DatabaseInformation.PASSWORD})
@@ -80,6 +81,7 @@ list_products_by_id_query = list(products_by_id_query)
 #                                         (name_source_product, nutriscore_source_product, name_alternative_product, \
 #                                         nutriscore_alternative_product) \
 #                                         VALUES (%s, %s, %s, %s);")
+
 
 class Store:
     l_products = [[products.id, products.name] for products in list_products_query]
