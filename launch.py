@@ -8,69 +8,10 @@ from api_openfoodfacts import api_off
 from PyQt5 import QtWidgets
 import sys
 from PyQt5.QtWidgets import QMessageBox
-from database.request_off import ProgramStatus, SubstituteManager, UserInput
+from database.request_off import ProgramStatus, SubstituteManager, UserInput, ListProducts
 from interface.mainwindow import Ui_MainWindow
-from database import request_off, database
-from database.models import Store
+from database import request_off, database, db_connection
 import operator
-from peewee import *
-from database.models import Categories, Products, Favorites
-
-
-def find_products_per_category():
-    products_per_category_query = \
-        Products.select(Products.id, Products.name, Products.brands, Products.nutriscore) \
-            .join(Categories, on=(Products.id_category == Categories.id)).where(
-            Categories.id == str(UserInput.user_category_choice)).order_by(Products.id)
-
-    list_products_per_category_query = list(products_per_category_query)
-
-    Store.l_products_per_cat = [
-        [products.id, products.name, products.brands, products.nutriscore]
-        for products in list_products_per_category_query]
-    Store.l_products_per_cat.sort(key=operator.itemgetter(0))
-
-
-def find_healthier_substitute():
-    nutriscore = Products.select(Products.nutriscore).where(Products.id == str(UserInput.user_product_choice))
-    SubstituteManager.nutriscore = str(nutriscore)
-    product_name = Products.select(Products.name).where(Products.name == str(UserInput.user_product_choice))
-    SubstituteManager.product_name = str(product_name)
-    id_category = Products.select(Products.id_category).where(Products.id == str(UserInput.user_product_choice))
-
-    substitute_query = Products.select(Products.id, Products.name, Products.nutriscore, Products.store,
-                                       Products.brands, Products.link) \
-        .join(Categories, on=Categories.id == Products.id_category).where(Categories.id == id_category,
-                                                                          Products.nutriscore < nutriscore) \
-        .order_by(Products.nutriscore)
-
-    list_substitute_query = list(substitute_query)
-
-    Store.l_substitute = [[products.id, products.name, products.nutriscore] for products in list_substitute_query]
-    Store.l_substitute.sort(key=operator.itemgetter(0))
-
-
-def save_product():
-    substitute_product_name = Products.select(Products.name).where(Products.id == UserInput.product_to_register)
-    substitute_product_nutriscore = Products.select(Products.nutriscore) \
-        .where(Products.id == UserInput.product_to_register)
-    substitute_product_link = Products.select(Products.link).where(Products.id == UserInput.product_to_register)
-    substitute_product_store = Products.select(Products.store).where(Products.id == UserInput.product_to_register)
-    source_prod_name = SubstituteManager.product_name
-    source_prod_nutriscore = SubstituteManager.nutriscore
-    # print(substitute_product_name) # SELECT `t1`.`name` FROM `Products` AS `t1` WHERE (`t1`.`id` = 5)
-    # print(str(substitute_product_name)) # SELECT `t1`.`name` FROM `Products` AS `t1` WHERE (`t1`.`id` = 5)
-
-    # PLANTE ICI
-    save_query = Favorites.insert(
-        name_alternative_product=str(substitute_product_name), # convert
-        nutriscore_alternative_product=str(substitute_product_nutriscore), # convert
-        name_source_product=str(source_prod_name),
-        nutriscore_source_product=str(source_prod_nutriscore)).execute()
-
-    list_save_query = list(save_query)
-    print(list_save_query)
-    # save_query.execute()
 
 
 def format_list(list):
@@ -213,11 +154,13 @@ class Main(QtWidgets.QMainWindow):
             ProgramStatus.message_list.append("Using database")
             self.display_message(ProgramStatus.message_list)
 
-            # self.get_data() # lorsqu'appelée la première fois, ListView Categories et Products vides
-
-            self.list_cat.setText(str("\n".join(map(str, Store.l_categories))))
-            self.list_prod.setText(str("\n".join(map(str, Store.l_products))))
-            self.saved_product_field.setText(str("\n".join(map(str, Store.l_favorites))))
+            # self.get_data()
+            self.request_access.show_categories(DatabaseInformation.TABLES)
+            self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
+            self.request_access.show_products(DatabaseInformation.TABLES)
+            self.list_prod.setText(str("\n".join(ListProducts.list_products)))
+            self.request_access.show_saved_products()
+            self.saved_product_field.setText(str("\n".join(ListProducts.list_saved_products)))
 
         except mariadb.Error as err:
             if err.errno:
@@ -232,12 +175,12 @@ class Main(QtWidgets.QMainWindow):
         self.status_bar = self.ui.textBrowser
         self.status_bar.setText(str("\n".join(ProgramStatus.message_list)))
         self.saved_product_field = self.ui.textBrowser_6
-        self.saved_product_field.setText(str("\n".join(map(str, Store.l_favorites))))
+        self.saved_product_field.setText(str("\n".join(ListProducts.list_saved_products)))
         self.quit_button = self.ui.pushButton_5
         self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str("\n".join(map(str, Store.l_categories))))
+        self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
         self.list_prod = self.ui.textBrowser_3
-        self.list_prod.setText(str("\n".join(map(str, Store.l_products))))
+        self.list_prod.setText(str("\n".join(ListProducts.list_products)))
         self.send_category = self.ui.pushButton_3
         self.send_category.clicked.connect(self.request_show_products_for_given_cat)
         self.send_product = self.ui.pushButton_6
@@ -250,38 +193,31 @@ class Main(QtWidgets.QMainWindow):
 
         self.quit_button.clicked.connect(quit)
 
+
     def request_show_products_for_given_cat(self):
         """
         Get user's category input and return the associated products
         """
         # refresh list when this function is called
-        # ListProducts.list_products_for_given_category = []  # à modifier
-        Store.l_products_per_cat = []
+        ListProducts.list_products_for_given_category = []
         UserInput.user_category_choice = self.category_choice.text()
 
         # convert data to int in order to verify its value
         # if it's a text, no need to convert : pass
         try:
             UserInput.int_user_category_choice = int(self.category_choice.text())
-            ################ WITH ORM ##############################
-            max_id2 = Categories.select(fn.MAX(Categories.id)).scalar()
-            ########################################################
             self.cursor.execute('SELECT max(id) FROM Categories')
             max_id = self.cursor.fetchone()[0]
 
             # if user input bigger than the max id, alert
-            # if UserInput.int_user_category_choice > max_id: ######### max_id2
-            if UserInput.int_user_category_choice > max_id2:  ######### max_id2
+            if UserInput.int_user_category_choice > max_id:
                 self.msg.setText(str("This number is too big."))
                 self.show_dialog()
             try:
-                # self.request_access.find_products_for_a_given_category() # voir ici
+                self.request_access.find_products_for_a_given_category()
                 self.list_prod_cat = self.ui.textBrowser_4
-                # puis changer en dessous
-                # self.list_prod_cat.setText(str("\n".join(ListProducts.list_products_for_given_category)))
-                find_products_per_category()
-                self.list_prod_cat.setText(str("\n".join(map(str, Store.l_products_per_cat))))
-                #         self.saved_product_field.setText(str("\n".join(map(str, Store.l_favorites)))
+                self.list_prod_cat.setText(str("\n".join(ListProducts.list_products_for_given_category)))
+
             except mariadb.Error as error:
                 self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
                 self.show_dialog()
@@ -296,16 +232,13 @@ class Main(QtWidgets.QMainWindow):
         """
         UserInput.product_to_register = self.saved_product_choice.text()
         try:
-            save_product()
-            # self.request_access.save_product(UserInput.product_to_register)
+            self.request_access.save_product(UserInput.product_to_register)
             self.check_presence_source_product()
             # refresh list when a new research is saved
-            # ListProducts.list_saved_products = []
-            Store.l_favorites = []
-            # self.request_access.show_saved_products()
-            self.saved_product_field.setText(str("\n".join(map(str, Store.l_favorites))))
-            # self.saved_product_field.setText(str("\n".join
-            #                                    (ListProducts.list_saved_products)))
+            ListProducts.list_saved_products = []
+            self.request_access.show_saved_products()
+            self.saved_product_field.setText(str("\n".join
+                                                 (ListProducts.list_saved_products)))
         except TypeError:
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()
@@ -329,15 +262,12 @@ class Main(QtWidgets.QMainWindow):
         Get user's product choice to trade and display the alternatives
         """
         # refresh list when this function is called
-        # ListProducts.substitute = []
-        Store.l_substitute = []
+        ListProducts.substitute = []
         UserInput.user_product_choice = self.product_choice.text()
         try:
-            # self.request_access.find_healthier_substitute(UserInput.user_product_choice)
-            find_healthier_substitute()
+            self.request_access.find_healthier_substitute(UserInput.user_product_choice)
             self.substitute = self.ui.textBrowser_5
-            # self.substitute.setText(str("\n".join(ListProducts.substitute)))
-            self.substitute.setText(str("\n".join(map(str, Store.l_substitute))))
+            self.substitute.setText(str("\n".join(ListProducts.substitute)))
         except TypeError:
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()

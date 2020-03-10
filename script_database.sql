@@ -33,8 +33,6 @@ CREATE TABLE Favorites (
     nutriscore_source_product CHAR(1),
     name_alternative_product VARCHAR(100),
     nutriscore_alternative_product CHAR(1),
-    store_alternative_product VARCHAR(100),
-    link_alternative_product VARCHAR(150),
     PRIMARY KEY(id),
     CONSTRAINT fk_products_name FOREIGN KEY (name_source_product)
     REFERENCES Products(name) ON DELETE CASCADE,
