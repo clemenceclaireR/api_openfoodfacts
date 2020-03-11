@@ -1,3 +1,4 @@
+mysql
 requests
 mysql-connector-python==8.0.19
 PyQt5==5.14.0

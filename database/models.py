@@ -1,23 +1,24 @@
 #! usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import operator
-from peewee import *
+
 from database.db_connection import DatabaseInformation
 from .request_off import UserInput
+from .querysets import CategoryQuerySet
 
 
-database = MySQLDatabase('openfoodfacts', **{'charset': 'utf8', 'sql_mode': 'PIPES_AS_CONCAT',
-                                             'use_unicode': True, 'user': DatabaseInformation.USER,
-                                             'passwd': DatabaseInformation.PASSWORD})
+class Base:
+    def __init__(self, cursor):
+        self.cursor = cursor
+        # self.name = name
+        self.categories_table = "Categories"
 
 
-class UnknownField(object):
-    def __init__(self, *_, **__): pass
+class Category(Base):
+    def select_all_categories(self):
+        query = CategoryQuerySet
+        return query.display_categories(self.cursor, self.categories_table)
 
 
-class BaseModel(Model):
-    class Meta:
-        database = database
-
-
+class Products(Base):
+    pass
