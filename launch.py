@@ -10,7 +10,8 @@ import sys
 from PyQt5.QtWidgets import QMessageBox
 from database.request_off import ProgramStatus, SubstituteManager, UserInput, ListProducts
 from interface.mainwindow import Ui_MainWindow
-from database import request_off, database, db_connection
+from database import request_off, database, db_connection, querysets
+from database.querysets import Test
 import operator
 
 
@@ -44,6 +45,7 @@ class Main(QtWidgets.QMainWindow):
         self.api_access = api_off.Api(self.cursor)
         self.database_access = database.Database(self.cursor)
         self.request_access = request_off.Request(self.cursor, self.database)
+        self.queryset = querysets.QuerySet()
 
         self.main_menu()
 
@@ -155,8 +157,10 @@ class Main(QtWidgets.QMainWindow):
             self.display_message(ProgramStatus.message_list)
 
             # self.get_data()
-            self.request_access.show_categories(DatabaseInformation.TABLES)
-            self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
+            #self.request_access.show_categories(DatabaseInformation.TABLES)
+            self.queryset.select_all_categories()
+            #self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
+            self.list_cat.setText(str("\n".join(Test.categories))) # renvoie une instance
             self.request_access.show_products(DatabaseInformation.TABLES)
             self.list_prod.setText(str("\n".join(ListProducts.list_products)))
             self.request_access.show_saved_products()
@@ -178,7 +182,8 @@ class Main(QtWidgets.QMainWindow):
         self.saved_product_field.setText(str("\n".join(ListProducts.list_saved_products)))
         self.quit_button = self.ui.pushButton_5
         self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
+        self.list_cat.setText(str("\n".join(Test.categories)))
+        #self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
         self.list_prod = self.ui.textBrowser_3
         self.list_prod.setText(str("\n".join(ListProducts.list_products)))
         self.send_category = self.ui.pushButton_3
