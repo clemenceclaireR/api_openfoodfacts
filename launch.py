@@ -4,15 +4,14 @@
 import mysql.connector as mariadb
 from mysql.connector import Error
 from database.db_connection import DatabaseInformation
-from api_openfoodfacts import api_off
+from api_openfoodfacts import api_request
 from PyQt5 import QtWidgets
 import sys
 from PyQt5.QtWidgets import QMessageBox
-from database.request_off import ProgramStatus, SubstituteManager, UserInput, ListProducts
+from api_openfoodfacts.api_request import ProgramStatus
 from interface.mainwindow import Ui_MainWindow
-from database import request_off, database, db_connection, querysets
-from database.querysets import Test
-import operator
+from database import database, querysets, models
+from database.querysets import List, UserInput
 
 
 def format_list(list):
@@ -42,10 +41,12 @@ class Main(QtWidgets.QMainWindow):
 
         self.cursor = self.database.cursor()
 
-        self.api_access = api_off.Api(self.cursor)
+        self.api_access = api_request.Api(self.cursor)
         self.database_access = database.Database(self.cursor)
-        self.request_access = request_off.Request(self.cursor, self.database)
         self.queryset = querysets.QuerySet()
+        self.category_access = models.Categories(self.cursor)
+        self.product_access = models.Products(self.cursor)
+        self.favorites_access = models.Favorites(self.cursor)
 
         self.main_menu()
 
@@ -157,14 +158,14 @@ class Main(QtWidgets.QMainWindow):
             self.display_message(ProgramStatus.message_list)
 
             # self.get_data()
-            #self.request_access.show_categories(DatabaseInformation.TABLES)
-            self.queryset.select_all_categories()
-            #self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
-            self.list_cat.setText(str("\n".join(Test.categories))) # renvoie une instance
-            self.request_access.show_products(DatabaseInformation.TABLES)
-            self.list_prod.setText(str("\n".join(ListProducts.list_products)))
-            self.request_access.show_saved_products()
-            self.saved_product_field.setText(str("\n".join(ListProducts.list_saved_products)))
+            self.category_access.select_all_categories()
+            self.list_cat.setText(str("\n".join(List.all_categories)))
+
+            self.product_access.select_all_products()
+            self.list_prod.setText(str("\n".join(List.all_products)))
+
+            self.favorites_access.select_saved_products()
+            self.saved_product_field.setText(str("\n".join(List.saved_products)))
 
         except mariadb.Error as err:
             if err.errno:
@@ -179,13 +180,12 @@ class Main(QtWidgets.QMainWindow):
         self.status_bar = self.ui.textBrowser
         self.status_bar.setText(str("\n".join(ProgramStatus.message_list)))
         self.saved_product_field = self.ui.textBrowser_6
-        self.saved_product_field.setText(str("\n".join(ListProducts.list_saved_products)))
+        self.saved_product_field.setText(str("\n".join(List.saved_products)))
         self.quit_button = self.ui.pushButton_5
         self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str("\n".join(Test.categories)))
-        #self.list_cat.setText(str("\n".join(ListProducts.list_categories)))
+        self.list_cat.setText(str("\n".join(List.all_categories)))
         self.list_prod = self.ui.textBrowser_3
-        self.list_prod.setText(str("\n".join(ListProducts.list_products)))
+        self.list_prod.setText(str("\n".join(List.all_products)))
         self.send_category = self.ui.pushButton_3
         self.send_category.clicked.connect(self.request_show_products_for_given_cat)
         self.send_product = self.ui.pushButton_6
@@ -198,30 +198,28 @@ class Main(QtWidgets.QMainWindow):
 
         self.quit_button.clicked.connect(quit)
 
-
     def request_show_products_for_given_cat(self):
         """
         Get user's category input and return the associated products
         """
         # refresh list when this function is called
-        ListProducts.list_products_for_given_category = []
+        List.products_per_category = []
         UserInput.user_category_choice = self.category_choice.text()
 
         # convert data to int in order to verify its value
         # if it's a text, no need to convert : pass
         try:
             UserInput.int_user_category_choice = int(self.category_choice.text())
-            self.cursor.execute('SELECT max(id) FROM Categories')
-            max_id = self.cursor.fetchone()[0]
+            self.queryset.verify_max_id()
 
             # if user input bigger than the max id, alert
-            if UserInput.int_user_category_choice > max_id:
+            if UserInput.int_user_category_choice > List.max_id:
                 self.msg.setText(str("This number is too big."))
                 self.show_dialog()
             try:
-                self.request_access.find_products_for_a_given_category()
+                self.category_access.select_products_per_category()
                 self.list_prod_cat = self.ui.textBrowser_4
-                self.list_prod_cat.setText(str("\n".join(ListProducts.list_products_for_given_category)))
+                self.list_prod_cat.setText(str("\n".join(List.products_per_category)))
 
             except mariadb.Error as error:
                 self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
@@ -237,13 +235,13 @@ class Main(QtWidgets.QMainWindow):
         """
         UserInput.product_to_register = self.saved_product_choice.text()
         try:
-            self.request_access.save_product(UserInput.product_to_register)
+            self.queryset.select_product_to_save(UserInput.product_to_register)
             self.check_presence_source_product()
             # refresh list when a new research is saved
-            ListProducts.list_saved_products = []
-            self.request_access.show_saved_products()
-            self.saved_product_field.setText(str("\n".join
-                                                 (ListProducts.list_saved_products)))
+            List.saved_products = []
+            #TODO : PAS MIS A JOUR EN DIRECT ICI
+            self.favorites_access.select_saved_products()
+            self.saved_product_field.setText(str("\n".join(List.saved_products)))
         except TypeError:
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()
@@ -255,7 +253,7 @@ class Main(QtWidgets.QMainWindow):
         """
         Check if there is a source product when the user wants to save a product
         """
-        if SubstituteManager.product_name == "":
+        if List.source_product_name == "":
             self.msg.setText(str("The product you just saved has no source product."))
             self.show_dialog()
         else:
@@ -267,12 +265,12 @@ class Main(QtWidgets.QMainWindow):
         Get user's product choice to trade and display the alternatives
         """
         # refresh list when this function is called
-        ListProducts.substitute = []
+        List.substitutes_products = []
         UserInput.user_product_choice = self.product_choice.text()
         try:
-            self.request_access.find_healthier_substitute(UserInput.user_product_choice)
+            self.product_access.select_substitute_products()
             self.substitute = self.ui.textBrowser_5
-            self.substitute.setText(str("\n".join(ListProducts.substitute)))
+            self.substitute.setText(str("\n".join(List.substitutes_products)))
         except TypeError:
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()

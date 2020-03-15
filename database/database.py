@@ -2,7 +2,7 @@
 # -*- Coding: UTF-8 -*-
 
 import mysql.connector
-from database.request_off import ProgramStatus
+from api_openfoodfacts.api_request import ProgramStatus
 
 
 class Database:

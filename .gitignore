@@ -9,7 +9,6 @@ database/*.pyc
 
 # Virtual Environments
 venv/
-env/
 
 # Doc
 descriptif_api_openfoodfacts

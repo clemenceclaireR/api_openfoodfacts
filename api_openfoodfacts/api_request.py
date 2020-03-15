@@ -2,8 +2,11 @@
 # -*- Coding: UTF-8 -*-
 
 import requests
-from database.request_off import ProgramStatus
 from .api_connection import APIInformation
+
+
+class ProgramStatus:
+    message_list = list()
 
 
 class Api:
