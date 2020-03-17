@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QMessageBox
 from api_openfoodfacts.api_request import ProgramStatus
 from interface.mainwindow import Ui_MainWindow
 from database import database, querysets, models
-from database.querysets import List, UserInput
+from database.querysets import List, UserInput, SubstituteProductInformation
 
 
 def format_list(list):
@@ -239,8 +239,8 @@ class Main(QtWidgets.QMainWindow):
             self.check_presence_source_product()
             # refresh list when a new research is saved
             List.saved_products = []
-            #TODO : PAS MIS A JOUR EN DIRECT ICI
-            self.favorites_access.select_saved_products()
+            # call to queryset instead of favorites in order to refresh correctly
+            self.queryset.display_saved_products("Favorites", "Products")
             self.saved_product_field.setText(str("\n".join(List.saved_products)))
         except TypeError:
             self.msg.setText("Please enter an attributed number.")
@@ -253,7 +253,7 @@ class Main(QtWidgets.QMainWindow):
         """
         Check if there is a source product when the user wants to save a product
         """
-        if List.source_product_name == "":
+        if SubstituteProductInformation.source_product_name == "":
             self.msg.setText(str("The product you just saved has no source product."))
             self.show_dialog()
         else:

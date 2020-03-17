@@ -7,18 +7,33 @@ from .models import Categories, Products, Favorites
 
 
 class UserInput:
+    """
+    Holds data the user sent
+    """
     product_to_register = int
     user_category_choice = int
     user_product_choice = int
 
 
 class List:
+    """
+    Store the data obtained by requests method in order to display it
+    in the graphical interface
+    """
     all_categories = []
     all_products = []
     products_per_category = []
     saved_products = []
     substitutes_products = []
     max_id = None
+
+
+class SubstituteProductInformation:
+    """
+    Store data obtained by request for substite product, in order to use it
+    for the save function and to check if a user wants to record a product
+    without a source product
+    """
     source_product = []
     source_product_name = ""
     source_product_nutriscore = ""
@@ -40,6 +55,17 @@ class QuerySet:
         self.categories_table = "Categories"
         self.products_table = "Products"
         self.favorites_table = "Favorites"
+
+    def connect_db(self):
+        """
+        Check if the connection with the database is established ; if not, then connect
+        """
+        if self.database.is_connected():
+            return
+        else:
+            self.database = mariadb.connect(user=DatabaseInformation.USER, password=DatabaseInformation.PASSWORD,
+                                            host=DatabaseInformation.HOST, database=DatabaseInformation.DATABASE,
+                                            buffered=True, use_unicode=True, use_pure=True)
 
     def display_categories(self, table_name):
         """
@@ -129,14 +155,17 @@ class QuerySet:
             count += 1
 
     def display_substitute_products(self, product_to_trade):
+        """
+        display products with a higher nutriscore from the one selected before
+        """
         request = ("SELECT * FROM Products \
                                         WHERE Products.id = " + product_to_trade)
         self.cursor.execute(request)
-        List.source_product = Products
-        List.source_product.results = self.cursor.fetchone()
-        List.source_product_name = str(List.source_product.results[1])
-        List.source_product_nutriscore = str(List.source_product.results[4])
-        List.source_product.category_id = str(List.source_product.results[2])
+        SubstituteProductInformation.source_product = Products
+        SubstituteProductInformation.source_product.results = self.cursor.fetchone()
+        SubstituteProductInformation.source_product_name = str(SubstituteProductInformation.source_product.results[1])
+        SubstituteProductInformation.source_product_nutriscore = str(SubstituteProductInformation.source_product.results[4])
+        SubstituteProductInformation.source_product.category_id = str(SubstituteProductInformation.source_product.results[2])
 
         request2 = ("SELECT Products.id, Products.name, Products.nutriscore, \
                    Products.store, Products.brands, Products.link \
@@ -145,7 +174,8 @@ class QuerySet:
                    WHERE Categories.id = %s \
                    AND Products.nutriscore < %s \
                    ORDER BY Products.nutriscore")
-        self.cursor.execute(request2, (List.source_product.category_id, List.source_product_nutriscore))
+        self.cursor.execute(request2, (SubstituteProductInformation.source_product.category_id,
+                                       SubstituteProductInformation.source_product_nutriscore))
 
         for result in self.cursor.fetchall():
             count = 0
@@ -161,6 +191,9 @@ class QuerySet:
             count += 1
 
     def select_product_to_save(self, prod_to_save):
+        """
+        Get the user's choice product to record and insert it into the database
+        """
         request = ("SELECT * FROM Products WHERE Products.id = %s " % prod_to_save)
         self.cursor.execute(request)
         product_to_save = Products
@@ -172,21 +205,19 @@ class QuerySet:
                    name_alternative_product, nutriscore_alternative_product) \
                    VALUES (%s, %s, %s, %s);")
 
-        self.cursor.execute(request, (List.source_product_name, List.source_product_nutriscore,
+        self.cursor.execute(request, (SubstituteProductInformation.source_product_name,
+                                      SubstituteProductInformation.source_product_nutriscore,
                                       product_to_save.name, product_to_save.nutriscore))
         # Save changes
         self.database.commit()
 
     def verify_max_id(self):
+        """
+        Check if the user entered a category id which is too big
+        """
         request = 'SELECT max(id) FROM Categories'
         self.cursor.execute(request)
         List.max_id = self.cursor.fetchone()[0]
 
-    def connect_db(self):
-        if self.database.is_connected():
-            return
-        else:
-            self.database = mariadb.connect(user=DatabaseInformation.USER, password=DatabaseInformation.PASSWORD,
-                                            host=DatabaseInformation.HOST, database=DatabaseInformation.DATABASE,
-                                            buffered=True, use_unicode=True, use_pure=True)
+
 
