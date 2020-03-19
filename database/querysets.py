@@ -8,7 +8,7 @@ from .models import Categories, Products, Favorites
 
 class UserInput:
     """
-    Holds data the user sent
+    Holds data the user sent to the program
     """
     product_to_register = int
     user_category_choice = int
@@ -49,29 +49,17 @@ class QuerySet:
                                             host=DatabaseInformation.HOST, database=DatabaseInformation.DATABASE,
                                             buffered=True, use_unicode=True, use_pure=True)
 
-        #self.connect_db() # renvoie une erreur car self.database existe pas
         self.cursor = self.database.cursor()
 
         self.categories_table = "Categories"
         self.products_table = "Products"
         self.favorites_table = "Favorites"
 
-    def connect_db(self):
-        """
-        Check if the connection with the database is established ; if not, then connect
-        """
-        if self.database.is_connected():
-            return
-        else:
-            self.database = mariadb.connect(user=DatabaseInformation.USER, password=DatabaseInformation.PASSWORD,
-                                            host=DatabaseInformation.HOST, database=DatabaseInformation.DATABASE,
-                                            buffered=True, use_unicode=True, use_pure=True)
-
-    def display_categories(self, table_name):
+    def display_categories(self, categories_table):
         """
         display the list of categories from the database
         """
-        request = ('SELECT * FROM %s ORDER BY id;' % table_name)
+        request = ('SELECT * FROM %s ORDER BY id;' % categories_table)
         self.cursor.execute(request)
         categories = []
         print(type(self.database))
@@ -101,15 +89,15 @@ class QuerySet:
             List.all_products.append("{} - {}, {}".format(product.id, product.name, product.brand))
             count += 1
 
-    def display_products_for_given_categories(self, products_table, category_table):
+    def display_products_for_given_categories(self, products_table, categories_table):
         """
         display the products associated to a given category
         """
-        request = ("SELECT OFFProducts.id, OFFProducts.name, brands, nutriscore \
-                   FROM %s as OFFProducts INNER JOIN %s \
-                   ON OFFProducts.id_category = Categories.id \
+        request = ("SELECT OffProducts.id, OffProducts.name, brands, nutriscore \
+                   FROM %s as OffProducts INNER JOIN %s \
+                   ON OffProducts.id_category = Categories.id \
                    WHERE Categories.id = %s \
-                   ORDER BY OFFProducts.id;" % (products_table, category_table, UserInput.user_category_choice))
+                   ORDER BY OffProducts.id;" % (products_table, categories_table, UserInput.user_category_choice))
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
             count = 0
@@ -118,7 +106,7 @@ class QuerySet:
             product.name = str(result[1])
             product.brand = str(result[2])
             product.nutriscore = str(result[3])
-            List.products_per_category.append("{} - {}, {} : {}".format(product.id, product.name,
+            List.products_per_category.append("{} - {}, {} ({})".format(product.id, product.name,
                                                                         product.brand, product.nutriscore))
             count += 1
 
@@ -183,9 +171,7 @@ class QuerySet:
             products.id = str(result[0])
             products.name = str(result[1])
             products.nutriscore = str(result[2])
-            # products.store = str(results[3])
             products.brand = str(result[4])
-            # products.link = str(results[5])
             List.substitutes_products.append("{} - {}, {} ({})".format(products.id, products.name,
                                                                        products.brand, products.nutriscore))
             count += 1

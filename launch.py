@@ -52,10 +52,12 @@ class Main(QtWidgets.QMainWindow):
 
     def show_dialog(self):
         """
-        open a QMessageBox
+        Open a QMessageBox
         """
         self.msg.setIcon(QMessageBox.Information)
         self.msg.exec_()
+
+################## These functions call the Api Request methods and catch errors if there are some ##################
 
     def fetch_products(self):
         """
@@ -123,6 +125,8 @@ class Main(QtWidgets.QMainWindow):
             self.show_dialog()
         self.display_message(ProgramStatus.message_list)
 
+#####################################################################################################################
+
     def get_data(self):
         """
         Call the needed functions in order to get data from
@@ -157,7 +161,7 @@ class Main(QtWidgets.QMainWindow):
             ProgramStatus.message_list.append("Using database")
             self.display_message(ProgramStatus.message_list)
 
-            # self.get_data()
+            self.get_data()
             self.category_access.select_all_categories()
             self.list_cat.setText(str("\n".join(List.all_categories)))
 

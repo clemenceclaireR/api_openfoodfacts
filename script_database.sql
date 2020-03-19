@@ -6,14 +6,14 @@ GRANT ALL PRIVILEGES ON openfoodfacts.* TO 'user'@localhost;
 
 USE openfoodfacts;
 
-CREATE TABLE Categories (
+CREATE TABLE categories (
     id SMALLINT(6) unsigned NOT NULL AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     PRIMARY KEY(id),
     UNIQUE KEY name (name)
     ) ENGINE=InnoDB;
 
-CREATE TABLE Products (
+CREATE TABLE products (
     id INT unsigned NOT NULL AUTO_INCREMENT,
     name VARCHAR(100),
     id_category SMALLINT(6) unsigned NOT NULL,
@@ -24,10 +24,10 @@ CREATE TABLE Products (
     PRIMARY KEY(id),
     UNIQUE KEY name (name),
     CONSTRAINT fk_categories_id FOREIGN KEY (id_category)
-    REFERENCES Categories(id) ON DELETE CASCADE
+    REFERENCES categories(id) ON DELETE CASCADE
     ) ENGINE=InnoDB;
 
-CREATE TABLE Favorites (
+CREATE TABLE favorites (
     id SMALLINT(6) unsigned NOT NULL AUTO_INCREMENT,
     name_source_product VARCHAR(100),
     nutriscore_source_product CHAR(1),
@@ -35,9 +35,9 @@ CREATE TABLE Favorites (
     nutriscore_alternative_product CHAR(1),
     PRIMARY KEY(id),
     CONSTRAINT fk_products_name FOREIGN KEY (name_source_product)
-    REFERENCES Products(name) ON DELETE CASCADE,
+    REFERENCES products(name) ON DELETE CASCADE,
     CONSTRAINT fk_products_name_alternative FOREIGN KEY (name_alternative_product)
-    REFERENCES Products(name) ON DELETE CASCADE
+    REFERENCES products(name) ON DELETE CASCADE
     ) ENGINE=INNoDB;
 
 

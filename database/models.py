@@ -6,6 +6,9 @@ from . import querysets
 
 
 class Base:
+    """
+    Base class which will be inherited for Categories, Products and Favorites classes
+    """
     def __init__(self, cursor):
         self.cursor = cursor
         self.categories_table = "Categories"
