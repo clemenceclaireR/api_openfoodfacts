@@ -10,7 +10,7 @@ import sys
 from PyQt5.QtWidgets import QMessageBox
 from api_openfoodfacts.api_request import ProgramStatus
 from interface.mainwindow import Ui_MainWindow
-from database import database, querysets, models
+from database import querysets, models
 from database.querysets import List, UserInput, SubstituteProductInformation
 
 
@@ -42,8 +42,8 @@ class Main(QtWidgets.QMainWindow):
         self.cursor = self.database.cursor()
 
         self.api_access = api_request.Api(self.cursor)
-        self.database_access = database.Database(self.cursor)
         self.queryset = querysets.QuerySet()
+
         self.category_access = models.Categories(self.cursor)
         self.product_access = models.Products(self.cursor)
         self.favorites_access = models.Favorites(self.cursor)
@@ -146,6 +146,10 @@ class Main(QtWidgets.QMainWindow):
         format_list(str(mess_list))
 
     def check_if_database_is_empty(self):
+        """
+        Check if the database is already filled or not.
+        If not, it will call the data in order to fill it.
+        """
         request = "SELECT * from Categories"
         self.cursor.execute(request)
         data = self.cursor.fetchone()
@@ -162,14 +166,11 @@ class Main(QtWidgets.QMainWindow):
         - displaying of the categories, products and saved products
         """
         try:
-            # ici, est ce que je ne mettrais pas le contenu de database.py
-            # dans queryset ?
-            self.database_access.use_db(DatabaseInformation.DATABASE)
+            self.queryset.use_db(DatabaseInformation.DATABASE)
             self.display_message(ProgramStatus.message_list)
 
-            # fonction check si tables vides : sinon, appelle get_data()
             self.check_if_database_is_empty()
-            #self.get_data()
+
             self.category_access.select_all_categories()
             self.list_cat.setText(str("\n".join(List.all_categories)))
 
@@ -180,8 +181,8 @@ class Main(QtWidgets.QMainWindow):
             self.saved_product_field.setText(str("\n".join(List.saved_products)))
 
         except mariadb.Error as err:
-            self.msg.setText("An error occured : %s" % err)
-            self.display_message()
+            self.msg.setText("An error occurred : %s" % err)
+            self.show_dialog()
 
     def main_menu(self, *kwargs):
         """

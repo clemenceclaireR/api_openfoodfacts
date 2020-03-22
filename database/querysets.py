@@ -4,6 +4,7 @@
 import mysql.connector as mariadb
 from database.db_connection import DatabaseInformation
 from .models import Categories, Products, Favorites
+from api_openfoodfacts.api_request import ProgramStatus
 
 
 class UserInput:
@@ -46,14 +47,26 @@ class QuerySet:
 
     def __init__(self):
         self.database = mariadb.connect(user=DatabaseInformation.USER, password=DatabaseInformation.PASSWORD,
-                                            host=DatabaseInformation.HOST, database=DatabaseInformation.DATABASE,
-                                            buffered=True, use_unicode=True, use_pure=True)
+                                        host=DatabaseInformation.HOST, database=DatabaseInformation.DATABASE,
+                                        buffered=True, use_unicode=True, use_pure=True)
 
         self.cursor = self.database.cursor()
 
         self.categories_table = "Categories"
         self.products_table = "Products"
         self.favorites_table = "Favorites"
+
+    def use_db(self, dbname):
+        """
+        Uses the database
+        if the database doesn't exists, it will raise an error.
+        """
+        try:
+            self.cursor.execute("USE %s;" % dbname)
+        except mariadb.Error:
+            ProgramStatus.message_list.append("Database %s doesn't seem to exist" % dbname)
+        else:
+            ProgramStatus.message_list.append("Database status ok")
 
     def display_categories(self, categories_table):
         """
@@ -152,8 +165,10 @@ class QuerySet:
         SubstituteProductInformation.source_product = Products
         SubstituteProductInformation.source_product.results = self.cursor.fetchone()
         SubstituteProductInformation.source_product_name = str(SubstituteProductInformation.source_product.results[1])
-        SubstituteProductInformation.source_product_nutriscore = str(SubstituteProductInformation.source_product.results[4])
-        SubstituteProductInformation.source_product.category_id = str(SubstituteProductInformation.source_product.results[2])
+        SubstituteProductInformation.source_product_nutriscore = str(
+            SubstituteProductInformation.source_product.results[4])
+        SubstituteProductInformation.source_product.category_id = str(
+            SubstituteProductInformation.source_product.results[2])
 
         request2 = ("SELECT Products.id, Products.name, Products.nutriscore, \
                    Products.store, Products.brands, Products.link \
@@ -204,6 +219,3 @@ class QuerySet:
         request = 'SELECT max(id) FROM Categories'
         self.cursor.execute(request)
         List.max_id = self.cursor.fetchone()[0]
-
-
-

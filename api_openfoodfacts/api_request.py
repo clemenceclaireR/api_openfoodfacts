@@ -111,7 +111,7 @@ class Api:
 
         for n in ids:
             for product in self.parsed_products:
-                if product['categories'] == self.id_name[n][1]:  # name
+                if product['categories'] == self.id_name[n][1]: # name
                     product['categories'] = self.id_name[n][0]  # ID
 
         return self.parsed_products
