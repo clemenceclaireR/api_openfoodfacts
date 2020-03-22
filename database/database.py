@@ -19,9 +19,11 @@ class Database:
         if the database doesn't exists, it will raise an error.
         """
         try:
-            self.cursor.execute("USE {};".format(dbname))
+            #self.cursor.execute("USE {};".format(dbname))
+            self.cursor.execute("USE %s;" % dbname)
         except mysql.connector.Error:
-            ProgramStatus.message_list.append("Database {} doesn't seem to exist".format(dbname))
+            #ProgramStatus.message_list.append("Database {} doesn't seem to exist".format(dbname))
+            ProgramStatus.message_list.append("Database %s doesn't seem to exist" % dbname)
         else:
             ProgramStatus.message_list.append("Database status ok")
 

@@ -145,6 +145,15 @@ class Main(QtWidgets.QMainWindow):
         self.main_menu(str(mess_list))
         format_list(str(mess_list))
 
+    def check_if_database_is_empty(self):
+        request = "SELECT * from Categories"
+        self.cursor.execute(request)
+        data = self.cursor.fetchone()
+        if not data:
+            self.get_data()
+        else:
+            return
+
     def main_loop(self):
         """
         Main loop of the program :
@@ -153,15 +162,14 @@ class Main(QtWidgets.QMainWindow):
         - displaying of the categories, products and saved products
         """
         try:
-            self.database_access.cursor.execute("USE {};".format(DatabaseInformation.DATABASE))
-            ProgramStatus.message_list.append("Trying to use database")
+            # ici, est ce que je ne mettrais pas le contenu de database.py
+            # dans queryset ?
+            self.database_access.use_db(DatabaseInformation.DATABASE)
             self.display_message(ProgramStatus.message_list)
 
-            self.cursor.execute("USE {};".format(DatabaseInformation.DATABASE))
-            ProgramStatus.message_list.append("Using database")
-            self.display_message(ProgramStatus.message_list)
-
-            self.get_data()
+            # fonction check si tables vides : sinon, appelle get_data()
+            self.check_if_database_is_empty()
+            #self.get_data()
             self.category_access.select_all_categories()
             self.list_cat.setText(str("\n".join(List.all_categories)))
 
@@ -172,8 +180,8 @@ class Main(QtWidgets.QMainWindow):
             self.saved_product_field.setText(str("\n".join(List.saved_products)))
 
         except mariadb.Error as err:
-            if err.errno:
-                self.get_data()
+            self.msg.setText("An error occured : %s" % err)
+            self.display_message()
 
     def main_menu(self, *kwargs):
         """
