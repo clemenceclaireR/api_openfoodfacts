@@ -10,6 +10,7 @@ import sys
 from PyQt5.QtWidgets import QMessageBox
 from api_openfoodfacts.api_request import ProgramStatus
 from interface.mainwindow import Ui_MainWindow
+from interface.loading_window import Ui_LoadingWindow
 from database import querysets, models
 from database.querysets import List, UserInput, SubstituteProductInformation
 
@@ -64,6 +65,8 @@ class Main(QtWidgets.QMainWindow):
         Call function to get products from the api and check
         for errors
         """
+        self.msg.setText("Your database will be filled in a moment.")
+        self.show_dialog()
         try:
             self.api_access.get_products()
             ProgramStatus.message_list.append("Getting products from the Api")
@@ -132,11 +135,13 @@ class Main(QtWidgets.QMainWindow):
         Call the needed functions in order to get data from
         the api and parse it, then insert it in the database
         """
+        self.loading_window()
         self.fetch_products()
         self.keep_only_one_category()
         self.sort_categories()
         self.insert_categories()
         self.insert_products()
+
 
     def display_message(self, mess_list):
         """
@@ -183,6 +188,11 @@ class Main(QtWidgets.QMainWindow):
         except mariadb.Error as err:
             self.msg.setText("An error occurred : %s" % err)
             self.show_dialog()
+
+    def loading_window(self):
+        self.ui_load = Ui_LoadingWindow()
+        self.ui_load.setupUi(self)
+        self.label = self.ui_load.label
 
     def main_menu(self, *kwargs):
         """

@@ -219,3 +219,4 @@ class QuerySet:
         request = 'SELECT max(id) FROM Categories'
         self.cursor.execute(request)
         List.max_id = self.cursor.fetchone()[0]
+
