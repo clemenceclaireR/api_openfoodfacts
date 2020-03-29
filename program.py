@@ -12,7 +12,7 @@ from api_openfoodfacts.api_request import ProgramStatus
 from interface.mainwindow import Ui_MainWindow
 from interface.loading_window import Ui_LoadingWindow
 from database import querysets, models
-from database.querysets import List, UserInput, SubstituteProductInformation
+from database.querysets import RequestData, UserInput, SubstituteProductInformation
 
 
 def format_list(list):
@@ -69,11 +69,11 @@ class Main(QtWidgets.QMainWindow):
         self.show_dialog()
         try:
             self.api_access.get_products()
-            ProgramStatus.message_list.append("Getting products from the Api")
+            ProgramStatus.MESSAGE_LIST.append("Getting products from the Api")
         except Error as e:
             self.msg.setText("{}".format(e))
             self.show_dialog()
-        self.display_message(ProgramStatus.message_list)
+        self.display_message(ProgramStatus.MESSAGE_LIST)
 
     def keep_only_one_category(self):
         """
@@ -82,13 +82,13 @@ class Main(QtWidgets.QMainWindow):
         """
         try:
             self.api_access.delete_superfluous_categories()
-            ProgramStatus.message_list.append("Keeping just one category per product")
+            ProgramStatus.MESSAGE_LIST.append("Keeping just one category per product")
         except Error as e:
             self.msg.setText("{}".format(e))
             self.show_dialog()
         else:
-            ProgramStatus.message_list.append("Categories parsed successfully")
-        self.display_message(ProgramStatus.message_list)
+            ProgramStatus.MESSAGE_LIST.append("Categories parsed successfully")
+        self.display_message(ProgramStatus.MESSAGE_LIST)
 
     def sort_categories(self):
         """
@@ -96,11 +96,11 @@ class Main(QtWidgets.QMainWindow):
         """
         try:
             self.api_access.sort_categories()
-            ProgramStatus.message_list.append("Sorting categories")
+            ProgramStatus.MESSAGE_LIST.append("Sorting categories")
         except Error as e:
             self.msg.setText("{}".format(e))
             self.show_dialog()
-        self.display_message(ProgramStatus.message_list)
+        self.display_message(ProgramStatus.MESSAGE_LIST)
 
     def insert_categories(self):
         """
@@ -109,11 +109,11 @@ class Main(QtWidgets.QMainWindow):
         """
         try:
             self.api_access.insert_categories(self.database)
-            ProgramStatus.message_list.append("Inserting categories into the database")
+            ProgramStatus.MESSAGE_LIST.append("Inserting categories into the database")
         except Error as e:
             self.msg.setText("{}".format(e))
             self.show_dialog()
-        self.display_message(ProgramStatus.message_list)
+        self.display_message(ProgramStatus.MESSAGE_LIST)
 
     def insert_products(self):
         """
@@ -122,11 +122,11 @@ class Main(QtWidgets.QMainWindow):
         """
         try:
             self.api_access.insert_products(self.database)
-            ProgramStatus.message_list.append("Database ready")
+            ProgramStatus.MESSAGE_LIST.append("Database ready")
         except Error as e:
             self.msg.setText("{}".format(e))
             self.show_dialog()
-        self.display_message(ProgramStatus.message_list)
+        self.display_message(ProgramStatus.MESSAGE_LIST)
 
 #####################################################################################################################
 
@@ -142,7 +142,6 @@ class Main(QtWidgets.QMainWindow):
         self.insert_categories()
         self.insert_products()
 
-
     def display_message(self, mess_list):
         """
         Actualize the data's status in the program window
@@ -155,10 +154,13 @@ class Main(QtWidgets.QMainWindow):
         Check if the database is already filled or not.
         If not, it will call the data in order to fill it.
         """
-        request = "SELECT * from Categories"
-        self.cursor.execute(request)
-        data = self.cursor.fetchone()
-        if not data:
+        request_categories = "SELECT * FROM Categories"
+        request_products = "SELECT * FROM Products"
+        self.cursor.execute(request_categories)
+        data_cat = self.cursor.fetchone()
+        self.cursor.execute(request_products)
+        data_prod = self.cursor.fetchone()
+        if not data_cat and not data_prod:
             self.get_data()
         else:
             return
@@ -172,18 +174,18 @@ class Main(QtWidgets.QMainWindow):
         """
         try:
             self.queryset.use_db(DatabaseInformation.DATABASE)
-            self.display_message(ProgramStatus.message_list)
+            self.display_message(ProgramStatus.MESSAGE_LIST)
 
             self.check_if_database_is_empty()
 
             self.category_access.select_all_categories()
-            self.list_cat.setText(str("\n".join(List.all_categories)))
+            self.list_cat.setText(str("\n".join(RequestData.ALL_CATEGORIES)))
 
             self.product_access.select_all_products()
-            self.list_prod.setText(str("\n".join(List.all_products)))
+            self.list_prod.setText(str("\n".join(RequestData.ALL_PRODUCTS)))
 
             self.favorites_access.select_saved_products()
-            self.saved_product_field.setText(str("\n".join(List.saved_products)))
+            self.saved_product_field.setText(str("\n".join(RequestData.SAVED_PRODUCTS)))
 
         except mariadb.Error as err:
             self.msg.setText("An error occurred : %s" % err)
@@ -201,14 +203,14 @@ class Main(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.status_bar = self.ui.textBrowser
-        self.status_bar.setText(str("\n".join(ProgramStatus.message_list)))
+        self.status_bar.setText(str("\n".join(ProgramStatus.MESSAGE_LIST)))
         self.saved_product_field = self.ui.textBrowser_6
-        self.saved_product_field.setText(str("\n".join(List.saved_products)))
+        self.saved_product_field.setText(str("\n".join(RequestData.SAVED_PRODUCTS)))
         self.quit_button = self.ui.pushButton_5
         self.list_cat = self.ui.textBrowser_2
-        self.list_cat.setText(str("\n".join(List.all_categories)))
+        self.list_cat.setText(str("\n".join(RequestData.ALL_CATEGORIES)))
         self.list_prod = self.ui.textBrowser_3
-        self.list_prod.setText(str("\n".join(List.all_products)))
+        self.list_prod.setText(str("\n".join(RequestData.ALL_PRODUCTS)))
         self.send_category = self.ui.pushButton_3
         self.send_category.clicked.connect(self.request_show_products_for_given_cat)
         self.send_product = self.ui.pushButton_6
@@ -226,8 +228,8 @@ class Main(QtWidgets.QMainWindow):
         Get user's category input and return the associated products
         """
         # refresh list when this function is called
-        List.products_per_category = []
-        UserInput.user_category_choice = self.category_choice.text()
+        RequestData.PRODUCTS_PER_CATEGORY = []
+        UserInput.USER_CATEGORY_CHOICE = self.category_choice.text()
 
         # convert data to int in order to verify its value
         # if it's a text, no need to convert : pass
@@ -236,13 +238,13 @@ class Main(QtWidgets.QMainWindow):
             self.queryset.verify_max_id()
 
             # if user input bigger than the max id, alert
-            if UserInput.int_user_category_choice > List.max_id:
+            if UserInput.int_user_category_choice > RequestData.MAX_ID:
                 self.msg.setText(str("This number is too big."))
                 self.show_dialog()
             try:
                 self.category_access.select_products_per_category()
                 self.list_prod_cat = self.ui.textBrowser_4
-                self.list_prod_cat.setText(str("\n".join(List.products_per_category)))
+                self.list_prod_cat.setText(str("\n".join(RequestData.PRODUCTS_PER_CATEGORY)))
 
             except mariadb.Error as error:
                 self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
@@ -256,15 +258,15 @@ class Main(QtWidgets.QMainWindow):
         """
         Get user's substitute choice input and save it in the database
         """
-        UserInput.product_to_register = self.saved_product_choice.text()
+        UserInput.PRODUCT_TO_REGISTER = self.saved_product_choice.text()
         try:
-            self.queryset.select_product_to_save(UserInput.product_to_register)
+            self.queryset.select_product_to_save(UserInput.PRODUCT_TO_REGISTER)
             self.check_presence_source_product()
             # refresh list when a new research is saved
-            List.saved_products = []
+            RequestData.SAVED_PRODUCTS = []
             # call to queryset instead of favorites in order to refresh correctly
             self.queryset.display_saved_products("Favorites", "Products")
-            self.saved_product_field.setText(str("\n".join(List.saved_products)))
+            self.saved_product_field.setText(str("\n".join(RequestData.SAVED_PRODUCTS)))
         except TypeError:
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()
@@ -276,7 +278,7 @@ class Main(QtWidgets.QMainWindow):
         """
         Check if there is a source product when the user wants to save a product
         """
-        if SubstituteProductInformation.source_product_name == "":
+        if SubstituteProductInformation.SOURCE_PRODUCT_NAME == "":
             self.msg.setText(str("The product you just saved has no source product."))
             self.show_dialog()
         else:
@@ -288,12 +290,12 @@ class Main(QtWidgets.QMainWindow):
         Get user's product choice to trade and display the alternatives
         """
         # refresh list when this function is called
-        List.substitutes_products = []
-        UserInput.user_product_choice = self.product_choice.text()
+        RequestData.SUBSTITUTES_PRODUCTS = []
+        UserInput.USER_PRODUCT_CHOICE = self.product_choice.text()
         try:
             self.product_access.select_substitute_products()
             self.substitute = self.ui.textBrowser_5
-            self.substitute.setText(str("\n".join(List.substitutes_products)))
+            self.substitute.setText(str("\n".join(RequestData.SUBSTITUTES_PRODUCTS)))
         except TypeError:
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()

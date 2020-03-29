@@ -11,33 +11,33 @@ class UserInput:
     """
     Holds data the user sent to the program
     """
-    product_to_register = int
-    user_category_choice = int
-    user_product_choice = int
+    PRODUCT_TO_REGISTER = int
+    USER_CATEGORY_CHOICE = int
+    USER_PRODUCT_CHOICE = int
 
 
-class List:
+class RequestData:
     """
     Store the data obtained by requests method in order to display it
     in the graphical interface
     """
-    all_categories = []
-    all_products = []
-    products_per_category = []
-    saved_products = []
-    substitutes_products = []
-    max_id = None
+    ALL_CATEGORIES = []
+    ALL_PRODUCTS = []
+    PRODUCTS_PER_CATEGORY = []
+    SAVED_PRODUCTS = []
+    SUBSTITUTES_PRODUCTS = []
+    MAX_ID = None
 
 
 class SubstituteProductInformation:
     """
-    Store data obtained by request for substite product, in order to use it
+    Store data obtained by request for substitute product, in order to use it
     for the save function and to check if a user wants to record a product
     without a source product
     """
-    source_product = []
-    source_product_name = ""
-    source_product_nutriscore = ""
+    SOURCE_PRODUCT = []
+    SOURCE_PRODUCT_NAME = ""
+    SOURCE_PRODUCT_NUTRISCORE = ""
 
 
 class QuerySet:
@@ -64,9 +64,9 @@ class QuerySet:
         try:
             self.cursor.execute("USE %s;" % dbname)
         except mariadb.Error:
-            ProgramStatus.message_list.append("Database %s doesn't seem to exist" % dbname)
+            ProgramStatus.MESSAGE_LIST.append("Database %s doesn't seem to exist" % dbname)
         else:
-            ProgramStatus.message_list.append("Database status ok")
+            ProgramStatus.MESSAGE_LIST.append("Database status ok")
 
     def display_categories(self, categories_table):
         """
@@ -81,7 +81,7 @@ class QuerySet:
             category = Categories
             category.id = str(result[0])
             category.name = str(result[1])
-            List.all_categories.append("{} - {}".format(category.id, category.name))
+            RequestData.ALL_CATEGORIES.append("{} - {}".format(category.id, category.name))
 
             count += 1
         return categories
@@ -99,7 +99,7 @@ class QuerySet:
             product.name = str(result[1])
             product.id = str(result[0])
             product.brand = str(result[2])
-            List.all_products.append("{} - {}, {}".format(product.id, product.name, product.brand))
+            RequestData.ALL_PRODUCTS.append("{} - {}, {}".format(product.id, product.name, product.brand))
             count += 1
 
     def display_products_for_given_categories(self, products_table, categories_table):
@@ -110,7 +110,7 @@ class QuerySet:
                    FROM %s as OffProducts INNER JOIN %s \
                    ON OffProducts.id_category = Categories.id \
                    WHERE Categories.id = %s \
-                   ORDER BY OffProducts.id;" % (products_table, categories_table, UserInput.user_category_choice))
+                   ORDER BY OffProducts.id;" % (products_table, categories_table, UserInput.USER_CATEGORY_CHOICE))
         self.cursor.execute(request)
         for result in self.cursor.fetchall():
             count = 0
@@ -119,8 +119,8 @@ class QuerySet:
             product.name = str(result[1])
             product.brand = str(result[2])
             product.nutriscore = str(result[3])
-            List.products_per_category.append("{} - {}, {} ({})".format(product.id, product.name,
-                                                                        product.brand, product.nutriscore))
+            RequestData.PRODUCTS_PER_CATEGORY.append("{} - {}, {} ({})".format(product.id, product.name,
+                                                                               product.brand, product.nutriscore))
             count += 1
 
     def display_saved_products(self, favorites_table, products_table):
@@ -143,14 +143,14 @@ class QuerySet:
             favorites.nutriscore_source = str(result[4])
             products.link = str(result[5])
             products.store = str(result[6])
-            List.saved_products.append("Your alternative product :"
+            RequestData.SAVED_PRODUCTS.append("Your alternative product :"
                                        "\n {} - {} ({})"
                                        "\nYour source product :"
                                        "\n {} ({})"
                                        "\nWhere to find :"
                                        "\n {} - {}"
                                        "\n"
-                                       .format(favorites.id, favorites.name_alt, favorites.nutriscore_alt,
+                                              .format(favorites.id, favorites.name_alt, favorites.nutriscore_alt,
                                                favorites.name_source, favorites.nutriscore_source,
                                                products.store, products.link))
             count += 1
@@ -162,13 +162,13 @@ class QuerySet:
         request = ("SELECT * FROM Products \
                                         WHERE Products.id = " + product_to_trade)
         self.cursor.execute(request)
-        SubstituteProductInformation.source_product = Products
-        SubstituteProductInformation.source_product.results = self.cursor.fetchone()
-        SubstituteProductInformation.source_product_name = str(SubstituteProductInformation.source_product.results[1])
-        SubstituteProductInformation.source_product_nutriscore = str(
-            SubstituteProductInformation.source_product.results[4])
-        SubstituteProductInformation.source_product.category_id = str(
-            SubstituteProductInformation.source_product.results[2])
+        SubstituteProductInformation.SOURCE_PRODUCT = Products
+        SubstituteProductInformation.SOURCE_PRODUCT.results = self.cursor.fetchone()
+        SubstituteProductInformation.SOURCE_PRODUCT_NAME = str(SubstituteProductInformation.SOURCE_PRODUCT.results[1])
+        SubstituteProductInformation.SOURCE_PRODUCT_NUTRISCORE = str(
+            SubstituteProductInformation.SOURCE_PRODUCT.results[4])
+        SubstituteProductInformation.SOURCE_PRODUCT.category_id = str(
+            SubstituteProductInformation.SOURCE_PRODUCT.results[2])
 
         request2 = ("SELECT Products.id, Products.name, Products.nutriscore, \
                    Products.store, Products.brands, Products.link \
@@ -177,8 +177,8 @@ class QuerySet:
                    WHERE Categories.id = %s \
                    AND Products.nutriscore < %s \
                    ORDER BY Products.nutriscore")
-        self.cursor.execute(request2, (SubstituteProductInformation.source_product.category_id,
-                                       SubstituteProductInformation.source_product_nutriscore))
+        self.cursor.execute(request2, (SubstituteProductInformation.SOURCE_PRODUCT.category_id,
+                                       SubstituteProductInformation.SOURCE_PRODUCT_NUTRISCORE))
 
         for result in self.cursor.fetchall():
             count = 0
@@ -187,8 +187,8 @@ class QuerySet:
             products.name = str(result[1])
             products.nutriscore = str(result[2])
             products.brand = str(result[4])
-            List.substitutes_products.append("{} - {}, {} ({})".format(products.id, products.name,
-                                                                       products.brand, products.nutriscore))
+            RequestData.SUBSTITUTES_PRODUCTS.append("{} - {}, {} ({})".format(products.id, products.name,
+                                                                              products.brand, products.nutriscore))
             count += 1
 
     def select_product_to_save(self, prod_to_save):
@@ -206,8 +206,8 @@ class QuerySet:
                    name_alternative_product, nutriscore_alternative_product) \
                    VALUES (%s, %s, %s, %s);")
 
-        self.cursor.execute(request, (SubstituteProductInformation.source_product_name,
-                                      SubstituteProductInformation.source_product_nutriscore,
+        self.cursor.execute(request, (SubstituteProductInformation.SOURCE_PRODUCT_NAME,
+                                      SubstituteProductInformation.SOURCE_PRODUCT_NUTRISCORE,
                                       product_to_save.name, product_to_save.nutriscore))
         # Save changes
         self.database.commit()
@@ -218,5 +218,5 @@ class QuerySet:
         """
         request = 'SELECT max(id) FROM Categories'
         self.cursor.execute(request)
-        List.max_id = self.cursor.fetchone()[0]
+        RequestData.MAX_ID = self.cursor.fetchone()[0]
 

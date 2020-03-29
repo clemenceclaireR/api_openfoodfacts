@@ -80,5 +80,5 @@ class Products(Base):
         """
         request to display all the substitutes of a given product
         """
-        return self.queryset.display_substitute_products(querysets.UserInput.user_product_choice)
+        return self.queryset.display_substitute_products(querysets.UserInput.USER_PRODUCT_CHOICE)
 

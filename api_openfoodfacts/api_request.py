@@ -6,7 +6,7 @@ from .api_connection import APIInformation
 
 
 class ProgramStatus:
-    message_list = list()
+    MESSAGE_LIST = list()
 
 
 class Api:
@@ -71,7 +71,7 @@ class Api:
             categories.append(element['categories'])
 
         self.sorted_categories = sorted(set(categories))
-        ProgramStatus.message_list.append("Categories sorted successfully")
+        ProgramStatus.MESSAGE_LIST.append("Categories sorted successfully")
         return self.sorted_categories
 
     def insert_categories(self, database):
@@ -83,7 +83,7 @@ class Api:
             self.user_cursor.execute("INSERT IGNORE INTO Categories(name) VALUES ('%s')"
                                      % element)
         database.commit()
-        ProgramStatus.message_list.append("Categories inserted successfully.")
+        ProgramStatus.MESSAGE_LIST.append("Categories inserted successfully.")
 
     def get_categories_name_and_ids(self):
         """
@@ -129,5 +129,5 @@ class Api:
                 element['brands'], element['nutrition_grade_fr'],
                 element['url'], element['stores']))
 
-        ProgramStatus.message_list.append("Products inserted successfully in the database.")
+        ProgramStatus.MESSAGE_LIST.append("Products inserted successfully in the database.")
         database.commit()
