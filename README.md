@@ -15,7 +15,7 @@ Linux :
 1) With command line =>_apt install python3_
 2) Download compressed file here : https://www.python.org/downloads/source/ 
 
-Windows : Donwload here => https://www.python.org/downloads/windows/
+Windows : Download here => https://www.python.org/downloads/windows/
 
 MacOS : Download here => https://www.python.org/downloads/mac-osx/
 
@@ -29,6 +29,13 @@ Linux :
 Windows and macOS :
 
 Download the MySQL installer on : https://dev.mysql.com/downloads/mysql/
+
+---
+If you also want a "all in one" solution, you can use
+_xampp_, which uses Apache, MySQL, PHP and Perl. You can have a view for your
+SQL database with _phpmyadmin_, which makes it easier for managing databases.
+It is available for Linux, Windows and MacOS.
+---
 
 **Create the database**
 
