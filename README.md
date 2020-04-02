@@ -41,6 +41,22 @@ It is available for Linux, Windows and MacOS.
 
 Use the file _script_database.sql_ : it will create the database, its tables, 
 encoding and user for you.
+You can do it like so in command line (you have to have an existing user):
+
+_mysql -u user -p < script_database.sql_
+
+/!\ The user has to have privilege to create database, or you can do it in root mode /!\
+
+**Fill the database (OPTIONAL)**
+
+This part is optional : when you launch _program.py_, it will automatically
+check if the database is empty or not : if its empty, it will fill it.
+
+You can use the script _fill_database.py_ which will do the exact same thing as when you launch
+the program, if you want it already filled before you launch it.
+
+/!\ In order for it to work, you have to already have created the database, its user 
+and tables. See the step above in order to do so. /!\
 
 **Python libraries**
 

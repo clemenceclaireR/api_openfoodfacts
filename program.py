@@ -122,7 +122,7 @@ class Main(QtWidgets.QMainWindow):
         """
         try:
             self.api_access.insert_products(self.database)
-            ProgramStatus.MESSAGE_LIST.append("Database ready")
+            ProgramStatus.MESSAGE_LIST.append("Database filled")
         except Error as e:
             self.msg.setText("{}".format(e))
             self.show_dialog()
@@ -168,8 +168,8 @@ class Main(QtWidgets.QMainWindow):
     def main_loop(self):
         """
         Main loop of the program :
-        - connection with the database
-        - get the data from the api to write/actualize it in the database
+        - select the database
+        - get the data from the api to write it in the database if its empty
         - displaying of the categories, products and saved products
         """
         try:

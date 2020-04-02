@@ -70,7 +70,7 @@ class QuerySet:
 
     def display_categories(self, categories_table):
         """
-        display the list of categories from the database
+        Display the list of categories from the database
         """
         request = ('SELECT * FROM %s ORDER BY id;' % categories_table)
         self.cursor.execute(request)
@@ -88,7 +88,7 @@ class QuerySet:
 
     def display_products(self, products_table):
         """
-        display the list of products from the database
+        Display the list of products from the database
         """
         request = ("SELECT id, name, brands FROM %s ORDER BY id;" % products_table)
         self.cursor.execute(request)
@@ -104,7 +104,7 @@ class QuerySet:
 
     def display_products_for_given_categories(self, products_table, categories_table):
         """
-        display the products associated to a given category
+        Display the products associated to a given category
         """
         request = ("SELECT OffProducts.id, OffProducts.name, brands, nutriscore \
                    FROM %s as OffProducts INNER JOIN %s \
@@ -125,7 +125,7 @@ class QuerySet:
 
     def display_saved_products(self, favorites_table, products_table):
         """
-        display previously saved products
+        Display previously saved products
         """
         request = "SELECT Favorites.id, Favorites.name_alternative_product, Favorites.nutriscore_alternative_product, \
                    Favorites.name_source_product, Favorites.nutriscore_source_product, \
@@ -157,7 +157,7 @@ class QuerySet:
 
     def display_substitute_products(self, product_to_trade):
         """
-        display products with a higher nutriscore from the one selected before
+        Display products with a higher nutriscore from the one selected before
         """
         request = ("SELECT * FROM Products \
                                         WHERE Products.id = " + product_to_trade)

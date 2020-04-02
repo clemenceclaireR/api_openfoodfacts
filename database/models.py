@@ -28,13 +28,13 @@ class Categories(Base):
 
     def select_all_categories(self):
         """
-        request to display all the categories in the database
+        Request to display all the categories in the database
         """
         return self.queryset.display_categories(self.categories_table)
 
     def select_products_per_category(self):
         """
-        request to display all the products associated to a given category
+        Request to display all the products associated to a given category
         """
         return self.queryset.display_products_for_given_categories(self.products_table, self.categories_table)
 
@@ -52,7 +52,7 @@ class Favorites(Base):
 
     def select_saved_products(self):
         """
-        request to display all the previously saved products
+        Request to display all the previously saved products
         """
         return self.queryset.display_saved_products(self.favorites_table, self.products_table)
 
@@ -72,13 +72,13 @@ class Products(Base):
 
     def select_all_products(self):
         """
-        request to display all the products from the database
+        Request to display all the products from the database
         """
         return self.queryset.display_products(self.products_table)
 
     def select_substitute_products(self):
         """
-        request to display all the substitutes of a given product
+        Request to display all the substitutes of a given product
         """
         return self.queryset.display_substitute_products(querysets.UserInput.USER_PRODUCT_CHOICE)
 
