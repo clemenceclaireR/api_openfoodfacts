@@ -30,12 +30,12 @@ Windows and macOS :
 
 Download the MySQL installer on : https://dev.mysql.com/downloads/mysql/
 
----
+
 If you also want a "all in one" solution, you can use
 _xampp_, which uses Apache, MySQL, PHP and Perl. You can have a view for your
 SQL database with _phpmyadmin_, which makes it easier for managing databases.
 It is available for Linux, Windows and MacOS.
----
+
 
 **Create the database**
 
