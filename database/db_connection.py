@@ -11,7 +11,7 @@ class DatabaseInformation:
     DATABASE = "openfoodfacts"
 
     USER = "user"
-    PASSWORD = "off2019"
+    PASSWORD = "off2020"
 
     TABLES = {'Categories': (
         "CREATE TABLE IF NOT EXISTS Categories ("

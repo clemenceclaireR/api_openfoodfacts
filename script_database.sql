@@ -1,4 +1,4 @@
-CREATE USER 'user'@localhost IDENTIFIED BY 'off2019';
+CREATE USER 'user'@localhost IDENTIFIED BY 'off2020';
 
 CREATE DATABASE openfoodfacts CHARACTER SET 'utf8';
 

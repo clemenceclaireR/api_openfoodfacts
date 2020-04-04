@@ -271,7 +271,7 @@ class Main(QtWidgets.QMainWindow):
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()
         except mariadb.Error as error:
-            self.msg.setText(str("Please enter a number. \nError : {}".format(error)))
+            self.msg.setText(str("Please enter a number"))
             self.show_dialog()
 
     def check_presence_source_product(self):
@@ -300,7 +300,7 @@ class Main(QtWidgets.QMainWindow):
             self.msg.setText("Please enter an attributed number.")
             self.show_dialog()
         except mariadb.Error as error:
-            self.msg.setText("Please enter a number. \nError : {}".format(error))
+            self.msg.setText("Please enter a number.")
             self.show_dialog()
 
 
