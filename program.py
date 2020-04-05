@@ -192,6 +192,9 @@ class Main(QtWidgets.QMainWindow):
             self.show_dialog()
 
     def loading_window(self):
+        """
+        Initialize the loading window objects
+        """
         self.ui_load = Ui_LoadingWindow()
         self.ui_load.setupUi(self)
         self.label = self.ui_load.label
